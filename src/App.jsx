@@ -1,51 +1,37 @@
-import { Routes, Route } from 'react-router-dom'
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from "react-router-dom";
+import "./App.css";
 
-// Contoh halaman sederhana
-function Dashboard() {
-  return <h2>Ini halaman Dashboard</h2>
-}
+import Header from "./components/Header/Header";
 
-function Home() {
-  return <h2>Ini halaman Home</h2>
-}
+// Import semua halaman
+import Beranda from "./pages/Beranda";
+import Profil from "./pages/Profil";
+import Infrastruktur from "./pages/Infrastruktur";
+import Aplikasi from "./pages/Aplikasi";
+import Berita from "./pages/Berita";
+import InformasiPublik from "./pages/InformasiPublik";
+import Aduan from "./pages/Aduan";
+import Literasi from "./pages/Literasi";
+import Kontak from "./pages/Kontak";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React + Router</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>git add 
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-
-      {/* Routing */}
+      <Header />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/" element={<Beranda />} />
+        <Route path="/dashboard" element={<Beranda />} />
+        <Route path="/profil" element={<Profil />} />
+        <Route path="/infrastruktur" element={<Infrastruktur />} />
+        <Route path="/aplikasi" element={<Aplikasi />} />
+        <Route path="/berita" element={<Berita />} />
+        <Route path="/informasi-publik" element={<InformasiPublik />} />
+        <Route path="/aduan" element={<Aduan />} />
+        <Route path="/literasi" element={<Literasi />} />
+        <Route path="/kontak" element={<Kontak />} />
       </Routes>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
