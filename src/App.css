@@ -2,16 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* tambahan kecil */
-body { @apply bg-gray-50; }
-
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* body sekarang tidak transparan lagi */
+body {
+  margin: 0;
+  padding: 0;
 }
 
+/* root tetap full layar */
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* sisa style default (opsional) */
 .logo {
   height: 6em;
   padding: 1.5em;
