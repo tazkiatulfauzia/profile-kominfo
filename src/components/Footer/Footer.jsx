@@ -2,36 +2,56 @@ import { Phone, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#003366] text-white mt-10">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 flex flex-col md:flex-row items-center justify-between">
-        
-        {/* Kiri: Logo + Alamat */}
-        <div className="flex items-center gap-4 pl-2">
-          <img src="/logo.png" alt="Logo" className="h-10" />
-          <div className="text-left">
-            <p className="text-sm font-medium">
+    <footer className="bg-gradient-to-b from-[#003366] to-[#002244] text-white mt-auto border-t-4 border-[#0055aa]">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+          {/* Logo + Info */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3 mb-2">
+              <img src="/logo.png" alt="Logo" className="h-12" />
+              <div>
+                <p className="font-bold text-sm">Diskominfo</p>
+                <p className="text-xs text-blue-200">Kota Bukittinggi</p>
+              </div>
+            </div>
+            <p className="text-xs text-blue-100 leading-relaxed">
               Dinas Komunikasi dan Informatika Kota Bukittinggi
             </p>
-            <p className="text-xs text-gray-300">
-              Jl. Kusuma Bhakti, Kubu Gulai Bancah, Kec. Mandiangin Koto Selayan, Kota Bukittinggi, Sumatera Barat 26113
+          </div>
+
+          {/* Alamat */}
+          <div>
+            <h3 className="font-bold text-sm mb-3 text-blue-200">Alamat Kantor</h3>
+            <p className="text-xs text-blue-100 leading-relaxed">
+              Jl. Kusuma Bhakti, Kubu Gulai Bancah<br />
+              Kec. Mandiangin Koto Selayan<br />
+              Kota Bukittinggi, Sumatera Barat 26113
             </p>
           </div>
+
+          {/* Kontak */}
+          <div>
+            <h3 className="font-bold text-sm mb-3 text-blue-200">Kontak Kami</h3>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center gap-2 text-blue-100">
+                <Phone size={14} />
+                <span>0853-5566-4484</span>
+              </div>
+              <div className="flex items-center gap-2 text-blue-100">
+                <Mail size={14} />
+                <span className="break-all">diskominfo@bukittinggikota.go.id</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Kanan: Kontak */}
-        <div className="flex gap-6 text-sm items-center mt-3 md:mt-0">
-          <div className="flex items-center gap-2">
-            <Phone size={16} /> <span>0853-5566-4484</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Mail size={16} /> <span>diskominfo@bukittinggikota.go.id</span>
-          </div>
+        {/* Copyright */}
+        <div className="border-t border-blue-800 pt-4 text-center">
+          <p className="text-xs text-blue-200">
+            © {new Date().getFullYear()} Dinas Komunikasi dan Informatika Kota Bukittinggi. 
+            <span className="block mt-1">Hak Cipta Dilindungi</span>
+          </p>
         </div>
-      </div>
-
-      {/* Copyright */}
-      <div className="bg-[#002244] text-center py-2 text-xs text-gray-300">
-        © {new Date().getFullYear()} Diskominfo Kota Bukittinggi. All rights reserved.
       </div>
     </footer>
   );

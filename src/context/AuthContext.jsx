@@ -4,52 +4,66 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  // Sistem sederhana: cek apakah admin sudah login dari localStorage
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("authUser")) || null;
+      const adminData = localStorage.getItem("adminData");
+      if (adminData) {
+        return JSON.parse(adminData);
+      }
+      return null;
     } catch {
       return null;
     }
   });
 
   useEffect(() => {
+    // Sync dengan localStorage
     if (user) {
-      localStorage.setItem("authUser", JSON.stringify(user));
+      localStorage.setItem("adminData", JSON.stringify(user));
     } else {
-      localStorage.removeItem("authUser");
+      localStorage.removeItem("adminData");
     }
   }, [user]);
 
-  // login: cek users di localStorage
-  const login = (email, password) => {
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const found = users.find((u) => u.email === email && u.password === password);
-    if (found) {
-      setUser(found);
+  // Login admin dengan email dan password dari Supabase
+  const login = async (email, password) => {
+    try {
+      const { loginAdmin } = await import("../lib/admin");
+      const adminData = await loginAdmin(email, password);
+      
+      // Cari email dari berbagai kemungkinan kolom
+      const emailColumns = ["email", "admin_email", "user_email", "email_address"];
+      let adminEmail = email.trim(); // Default ke email yang diinput
+      
+      for (const col of emailColumns) {
+        if (adminData[col]) {
+          adminEmail = String(adminData[col]).trim();
+          break;
+        }
+      }
+      
+      const userData = {
+        id: adminData.id,
+        email: adminEmail,
+        role: "Admin",
+      };
+      
+      setUser(userData);
       return { ok: true };
+    } catch (error) {
+      console.error("Login error:", error);
+      return { ok: false, message: error.message || "Email atau password salah" };
     }
-    return { ok: false, message: "Email atau password salah" };
-  };
-
-  // register: tambah user ke localStorage
-  const register = ({ name, email, password, role = "User" }) => {
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    if (users.some((u) => u.email === email)) {
-      return { ok: false, message: "Email sudah terdaftar" };
-    }
-    const newUser = { id: Date.now(), name, email, password, role };
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
-    setUser(newUser);
-    return { ok: true };
   };
 
   const logout = () => {
+    localStorage.removeItem("adminData");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

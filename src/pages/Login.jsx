@@ -1,30 +1,58 @@
-// src/pages/Login.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
-  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErr("");
-    const res = login(email.trim(), password);
-    if (res.ok) {
+
+    try {
+      // 1. Login via Supabase Auth
+      const { data: userData, error: loginError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (loginError) {
+        setErr(loginError.message);
+        return;
+      }
+
+      if (!userData.user) {
+        setErr("Login gagal, user tidak ditemukan");
+        return;
+      }
+
+      // 2. Cek role admin di tabel 'admins' pakai user_id (UUID)
+      const { data: adminData, error: adminError } = await supabase
+        .from("admins") // pastikan tabel 'admins'
+        .select("*")
+        .eq("user_id", userData.user.id)
+        .single();
+
+      if (adminError || !adminData) {
+        setErr("Login berhasil, tapi bukan admin");
+        return;
+      }
+
+      // 3. Login berhasil → arahkan ke halaman admin
       navigate("/account");
-    } else {
-      setErr(res.message || "Login gagal");
+    } catch (error) {
+      console.error("Login error:", error);
+      setErr("Terjadi kesalahan saat login");
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#d9e6ff] px-4">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-8">
-        <h2 className="text-2xl font-bold text-center text-[#003366] mb-6">Login</h2>
+        <h2 className="text-2xl font-bold text-center text-[#003366] mb-6">Login Admin</h2>
 
         {err && <div className="mb-4 text-sm text-red-600">{err}</div>}
 

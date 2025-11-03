@@ -22,25 +22,27 @@ export default function Literasi() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
+    <div className="mx-auto max-w-7xl px-4 py-10 bg-gradient-to-br from-blue-50 via-white to-blue-50 min-h-screen">
       <div className="grid lg:grid-cols-3 gap-8">
         <section className="lg:col-span-2">
           {/* Artikel Singkat */}
-          <h2 className="text-2xl font-bold text-[#003366] border-l-4 border-[#003366] pl-3">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent border-l-4 border-[#003366] pl-4 mb-4">
             Artikel Singkat
           </h2>
-          <article className="mt-4 bg-white p-6 rounded-2xl shadow hover:shadow-md transition">
-            <h3 className="font-semibold text-[#003366] text-lg">
+          <article className="mt-4 bg-gradient-to-br from-white to-blue-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition border border-blue-100">
+            <h3 className="font-semibold text-[#003366] text-xl mb-3">
               Tips Aman Menggunakan Media Sosial
             </h3>
-            <ul className="list-disc pl-5 mt-3 text-[#003366]/80 space-y-1">
-              <li>Aktifkan 2FA</li>
-              <li>Gunakan password kuat</li>
+            <ul className="list-disc pl-5 mt-3 text-[#003366]/90 space-y-2">
+              <li>Aktifkan 2FA (Two-Factor Authentication)</li>
+              <li>Gunakan password yang kuat dan unik</li>
+              <li>Jangan bagikan informasi pribadi di media sosial</li>
+              <li>Hati-hati dengan link yang mencurigakan</li>
             </ul>
           </article>
 
           {/* Daftar Artikel */}
-          <h2 className="mt-10 text-2xl font-bold text-[#003366] border-l-4 border-[#003366] pl-3">
+          <h2 className="mt-10 text-3xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent border-l-4 border-[#003366] pl-4 mb-4">
             Artikel Bukittinggi
           </h2>
           <div className="mt-4 grid md:grid-cols-2 gap-6">
@@ -50,16 +52,18 @@ export default function Literasi() {
                 href={a.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block rounded-2xl shadow hover:shadow-lg hover:-translate-y-1 transition transform p-6 bg-gradient-to-br from-blue-50 to-blue-100"
+                className="block rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition transform p-6 bg-gradient-to-br from-white to-blue-50 border border-blue-100"
               >
                 <div className="flex items-start gap-3">
-                  {a.icon}
-                  <div>
-                    <h3 className="font-semibold text-[#003366] text-lg leading-snug">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-[#003366] to-[#0055aa] text-white">
+                    {a.icon}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-[#003366] text-lg leading-snug mb-2">
                       {a.title}
                     </h3>
-                    <p className="mt-2 text-sm text-[#003366]/70">
-                      Klik untuk membaca artikel
+                    <p className="text-sm text-[#003366]/70 font-medium">
+                      Baca Artikel →
                     </p>
                   </div>
                 </div>
@@ -68,35 +72,49 @@ export default function Literasi() {
           </div>
 
           {/* Kutipan Literasi */}
-          <h2 className="mt-10 text-2xl font-bold text-[#003366] border-l-4 border-[#003366] pl-3">
+          <h2 className="mt-10 text-3xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent border-l-4 border-[#003366] pl-4 mb-4">
             Kutipan Literasi
           </h2>
           <div className="mt-4 grid md:grid-cols-2 gap-6">
-            <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow">
-              <p className="italic text-[#003366]/90 text-lg">
-                “Membaca adalah jendela dunia.”
+            <div className="p-6 bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg border border-blue-100">
+              <p className="italic text-[#003366] text-lg font-medium leading-relaxed">
+                "Membaca adalah jendela dunia."
               </p>
-              <p className="mt-3 text-sm text-[#003366]/70">— Pepatah Lama</p>
+              <p className="mt-4 text-sm text-[#003366]/80 font-semibold">— Pepatah Lama</p>
             </div>
-            <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow">
-              <p className="italic text-[#003366]/90 text-lg">
-                “Literasi adalah kunci menuju peradaban.”
+            <div className="p-6 bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg border border-blue-100">
+              <p className="italic text-[#003366] text-lg font-medium leading-relaxed">
+                "Literasi adalah kunci menuju peradaban."
               </p>
-              <p className="mt-3 text-sm text-[#003366]/70">— Anonim</p>
+              <p className="mt-4 text-sm text-[#003366]/80 font-semibold">— Anonim</p>
             </div>
           </div>
         </section>
 
         {/* Video */}
-        <aside>
-          <h2 className="text-2xl font-bold text-[#003366] border-l-4 border-[#003366] pl-3">
-            Video
+        <aside className="space-y-6">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent border-l-4 border-[#003366] pl-4 mb-4">
+            Video Bukittinggi
           </h2>
-          <div className="mt-4 aspect-video rounded-2xl overflow-hidden shadow-lg">
+          
+          {/* Video YouTube Bukittinggi */}
+          <div className="aspect-video rounded-2xl overflow-hidden shadow-lg">
+            <iframe
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/a-kmKhnoBpc?si=iUf8L8jGhXkJrMUN"
+              title="Video Kota Bukittinggi"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+
+          {/* Video tambahan jika ada */}
+          <div className="aspect-video rounded-2xl overflow-hidden shadow-lg">
             <iframe
               className="w-full h-full"
               src="https://www.youtube.com/embed/HEV1pWyYS1w?si=XefbpPr2no16W8US"
-              title="Video"
+              title="Video Lainnya"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           </div>
