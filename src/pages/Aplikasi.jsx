@@ -8,6 +8,7 @@ export default function Aplikasi() {
   const isAdmin = user?.role === "Admin";
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -24,10 +25,15 @@ export default function Aplikasi() {
 
   async function loadAplikasi() {
     try {
+      setLoadingData(true);
       const data = await getAplikasi();
-      setApps(data || []);
+      setApps(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Gagal memuat aplikasi:", error);
+      setMessage({ type: "error", text: "Gagal memuat data aplikasi. Silakan refresh halaman." });
+      setApps([]);
+    } finally {
+      setLoadingData(false);
     }
   }
 
@@ -189,7 +195,11 @@ export default function Aplikasi() {
         )}
 
         {/* Daftar Aplikasi */}
-        {apps.length > 0 ? (
+        {loadingData ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Memuat data aplikasi...</p>
+          </div>
+        ) : apps.length > 0 ? (
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
             {apps.map((a) => (
               <div

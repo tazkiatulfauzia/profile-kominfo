@@ -43,3 +43,7 @@ export async function deleteAplikasi(id) {
   return data;
 }
 
+
+
+
+

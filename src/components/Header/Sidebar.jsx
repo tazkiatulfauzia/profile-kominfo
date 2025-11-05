@@ -2,11 +2,9 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   Home,
   User,
-  Server,
   Box,
   Newspaper,
   MessageCircle,
-  FileText,
   Phone,
   X,
 } from "lucide-react";
@@ -19,11 +17,9 @@ export default function Sidebar({ open = false, onClose = () => {}, menus = [] }
   const defaultMenuItems = [
     { name: "Beranda", path: "/", icon: <Home size={20} /> },
     { name: "Profil", path: "/profil", icon: <User size={20} /> },
-    { name: "Infrastruktur", path: "/infrastruktur", icon: <Server size={20} /> },
     { name: "Aplikasi", path: "/aplikasi", icon: <Box size={20} /> },
     { name: "Berita", path: "/berita", icon: <Newspaper size={20} /> },
     { name: "Aduan", path: "/aduan", icon: <MessageCircle size={20} /> },
-    { name: "PPID", path: "/ppid", icon: <FileText size={20} /> },
     { name: "Kontak", path: "/kontak", icon: <Phone size={20} /> },
   ];
 

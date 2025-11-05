@@ -10,9 +10,14 @@ import {
   AlertCircle,
   Edit2,
   Trash2,
+  ArrowRight,
+  X,
+  Building2,
+  Search,
 } from "lucide-react";
-import { tambahAduan, getAduan, updateAduan, deleteAduan } from "../lib/aduan";
+import { tambahAduan, getAduan, updateAduan, deleteAduan, updateTindakLanjut } from "../lib/aduan";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Aduan() {
   const { user } = useAuth();
@@ -34,6 +39,42 @@ export default function Aduan() {
     no_hp: "",
     isi_aduan: "",
   });
+  const [tindakLanjutId, setTindakLanjutId] = useState(null);
+  const [tindakLanjutLoading, setTindakLanjutLoading] = useState(false);
+  const [tindakLanjutForm, setTindakLanjutForm] = useState({
+    status: "diproses",
+    dinas_tujuan: "",
+    keterangan: "",
+  });
+  const [cekStatusNama, setCekStatusNama] = useState("");
+  const [statusAduan, setStatusAduan] = useState([]);
+  const [loadingCekStatus, setLoadingCekStatus] = useState(false);
+  
+  const daftarDinas = [
+    "Dinas Pendidikan",
+    "Dinas Kesehatan",
+    "Dinas Pekerjaan Umum",
+    "Dinas Perhubungan",
+    "Dinas Sosial",
+    "Dinas Pariwisata",
+    "Dinas Lingkungan Hidup",
+    "Dinas Perdagangan",
+    "Dinas Pertanian",
+    "Dinas Perpajakan",
+    "Dinas Kependudukan dan Catatan Sipil",
+    "Dinas Perumahan dan Permukiman",
+    "Badan Kesatuan Bangsa dan Politik",
+    "Dinas Pemberdayaan Masyarakat",
+    "Dinas Komunikasi dan Informatika",
+    "Dinas lainnya",
+  ];
+  
+  const statusOptions = [
+    { value: "diajukan", label: "Diajukan", color: "bg-gray-500" },
+    { value: "diproses", label: "Diproses", color: "bg-yellow-500" },
+    { value: "diteruskan", label: "Diteruskan", color: "bg-blue-500" },
+    { value: "selesai", label: "Selesai", color: "bg-green-500" },
+  ];
 
   useEffect(() => {
     if (isAdmin) {
@@ -47,7 +88,73 @@ export default function Aduan() {
       setAduanList(data || []);
     } catch (error) {
       console.error("Gagal memuat aduan:", error);
+      setMessage({ type: "error", text: "Gagal memuat data aduan" });
     }
+  }
+  
+  async function handleTindakLanjut(e) {
+    e.preventDefault();
+    setTindakLanjutLoading(true);
+    setMessage({ type: "", text: "" });
+    try {
+      await updateTindakLanjut(
+        tindakLanjutId,
+        tindakLanjutForm.status,
+        tindakLanjutForm.dinas_tujuan,
+        tindakLanjutForm.keterangan
+      );
+      setMessage({ type: "success", text: "Tindak lanjut berhasil disimpan!" });
+      setTindakLanjutId(null);
+      setTindakLanjutForm({ status: "diproses", dinas_tujuan: "", keterangan: "" });
+      await loadAduan();
+    } catch (error) {
+      console.error("Error menyimpan tindak lanjut:", error);
+      setMessage({ type: "error", text: error.message || "Gagal menyimpan tindak lanjut" });
+    } finally {
+      setTindakLanjutLoading(false);
+    }
+  }
+  
+  async function cekStatusAduan(e) {
+    e.preventDefault();
+    if (!cekStatusNama.trim()) {
+      setMessage({ type: "error", text: "Masukkan nama terlebih dahulu" });
+      return;
+    }
+    setLoadingCekStatus(true);
+    setMessage({ type: "", text: "" });
+    try {
+      const { data, error } = await supabase
+        .from("aduan")
+        .select("nama, status, keterangan_tindak_lanjut")
+        .ilike("nama", `%${cekStatusNama.trim()}%`)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        setStatusAduan(data);
+        setMessage({ type: "success", text: `Ditemukan ${data.length} aduan dengan nama "${cekStatusNama}"` });
+      } else {
+        setStatusAduan([]);
+        setMessage({ type: "error", text: `Tidak ditemukan aduan dengan nama "${cekStatusNama}"` });
+      }
+    } catch (error) {
+      console.error("Error cek status:", error);
+      setMessage({ type: "error", text: "Gagal memeriksa status aduan" });
+      setStatusAduan([]);
+    } finally {
+      setLoadingCekStatus(false);
+    }
+  }
+  
+  function openTindakLanjut(item) {
+    setTindakLanjutId(item.id);
+    setTindakLanjutForm({
+      status: item.status || "diproses",
+      dinas_tujuan: item.dinas_tujuan || "",
+      keterangan: item.keterangan_tindak_lanjut || "",
+    });
   }
 
   async function handleSubmit(e) {
@@ -92,25 +199,116 @@ export default function Aduan() {
             {aduanList.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-[#003366] to-[#0055aa] text-white">
-                      <th className="px-4 py-3 text-left rounded-tl-lg">No</th>
-                      <th className="px-4 py-3 text-left">Nama</th>
-                      <th className="px-4 py-3 text-left">Email</th>
-                      <th className="px-4 py-3 text-left">No. HP</th>
-                      <th className="px-4 py-3 text-left">Isi Aduan</th>
-                      <th className="px-4 py-3 text-left">Tanggal</th>
-                      <th className="px-4 py-3 text-left rounded-tr-lg">Aksi</th>
-                    </tr>
-                  </thead>
+                  {!tindakLanjutId && !editingId && (
+                    <thead>
+                      <tr className="bg-gradient-to-r from-[#003366] to-[#0055aa] text-white">
+                        <th className="px-4 py-3 text-left rounded-tl-lg">No</th>
+                        <th className="px-4 py-3 text-left">Nama</th>
+                        <th className="px-4 py-3 text-left">Email</th>
+                        <th className="px-4 py-3 text-left">No. HP</th>
+                        <th className="px-4 py-3 text-left">Isi Aduan</th>
+                        <th className="px-4 py-3 text-left">Status</th>
+                        <th className="px-4 py-3 text-left">Dinas Tujuan</th>
+                        <th className="px-4 py-3 text-left">Tanggal</th>
+                        <th className="px-4 py-3 text-left rounded-tr-lg">Aksi</th>
+                      </tr>
+                    </thead>
+                  )}
                   <tbody>
                     {aduanList.map((item, index) => (
                       <tr
                         key={item.id}
                         className="border-b border-blue-100 hover:bg-blue-50 transition"
                       >
-                        {editingId === item.id ? (
-                          <td colSpan={7} className="px-4 py-4 bg-blue-50">
+                        {tindakLanjutId === item.id ? (
+                          <td colSpan={9} className="px-4 py-4 bg-gradient-to-br from-blue-50 to-green-50 border-2 border-blue-300">
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-lg font-bold text-[#003366] flex items-center gap-2">
+                                  <Building2 size={20} />
+                                  Tindak Lanjut Aduan
+                                </h3>
+                                <button
+                                  onClick={() => {
+                                    setTindakLanjutId(null);
+                                    setTindakLanjutForm({ status: "diproses", dinas_tujuan: "", keterangan: "" });
+                                  }}
+                                  className="p-1 text-gray-500 hover:text-red-600 transition"
+                                >
+                                  <X size={20} />
+                                </button>
+                              </div>
+                              <form onSubmit={handleTindakLanjut} className="space-y-4">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                      Status
+                                    </label>
+                                    <select
+                                      value={tindakLanjutForm.status}
+                                      onChange={(e) => setTindakLanjutForm({...tindakLanjutForm, status: e.target.value})}
+                                      className="w-full px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none"
+                                    >
+                                      {statusOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>
+                                          {opt.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                      Dinas Tujuan
+                                    </label>
+                                    <select
+                                      value={tindakLanjutForm.dinas_tujuan}
+                                      onChange={(e) => setTindakLanjutForm({...tindakLanjutForm, dinas_tujuan: e.target.value})}
+                                      className="w-full px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none"
+                                    >
+                                      <option value="">Pilih Dinas...</option>
+                                      {daftarDinas.map(dinas => (
+                                        <option key={dinas} value={dinas}>{dinas}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Keterangan Tindak Lanjut
+                                  </label>
+                                  <textarea
+                                    value={tindakLanjutForm.keterangan}
+                                    onChange={(e) => setTindakLanjutForm({...tindakLanjutForm, keterangan: e.target.value})}
+                                    placeholder="Masukkan keterangan tindak lanjut..."
+                                    rows={3}
+                                    className="w-full px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none resize-none"
+                                  />
+                                </div>
+                                <div className="flex gap-3">
+                                  <button
+                                    type="submit"
+                                    disabled={tindakLanjutLoading}
+                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-2 bg-gradient-to-r from-[#003366] to-[#0055aa] text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <ArrowRight size={18} />
+                                    {tindakLanjutLoading ? "Menyimpan..." : "Simpan Tindak Lanjut"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setTindakLanjutId(null);
+                                      setTindakLanjutForm({ status: "diproses", dinas_tujuan: "", keterangan: "" });
+                                    }}
+                                    className="px-6 py-2 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition"
+                                  >
+                                    Batal
+                                  </button>
+                                </div>
+                              </form>
+                            </div>
+                          </td>
+                        ) : editingId === item.id ? (
+                          <td colSpan={9} className="px-4 py-4 bg-blue-50">
                             <form onSubmit={async (e) => {
                               e.preventDefault();
                               try {
@@ -184,6 +382,29 @@ export default function Aduan() {
                                 {item.isi_aduan}
                               </div>
                             </td>
+                            <td className="px-4 py-3">
+                              {item.status ? (
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white ${
+                                  statusOptions.find(s => s.value === item.status)?.color || "bg-gray-500"
+                                }`}>
+                                  {statusOptions.find(s => s.value === item.status)?.label || item.status}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-500 text-white">
+                                  Diajukan
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-gray-700 text-sm">
+                              {item.dinas_tujuan ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                                  <Building2 size={12} />
+                                  {item.dinas_tujuan}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 text-xs">-</span>
+                              )}
+                            </td>
                             <td className="px-4 py-3 text-gray-600 text-sm">
                               {item.created_at
                                 ? new Date(item.created_at).toLocaleDateString("id-ID", {
@@ -196,7 +417,14 @@ export default function Aduan() {
                                 : "-"}
                             </td>
                             <td className="px-4 py-3">
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 flex-wrap">
+                                <button
+                                  onClick={() => openTindakLanjut(item)}
+                                  className="p-2 text-green-600 hover:bg-green-100 rounded transition"
+                                  title="Tindak Lanjut"
+                                >
+                                  <ArrowRight size={16} />
+                                </button>
                                 <button
                                   onClick={() => {
                                     setEditingId(item.id);
@@ -253,6 +481,71 @@ export default function Aduan() {
               </p>
             </div>
             <div className="p-10 bg-gradient-to-br from-blue-50 to-white">
+              {/* Cek Status Aduan */}
+              <div className="mb-8 bg-white rounded-xl p-6 border-2 border-blue-200 shadow-sm">
+                <h3 className="text-xl font-bold text-[#003366] mb-4 flex items-center gap-2">
+                  <Search size={20} />
+                  Cek Status Aduan
+                </h3>
+                <form onSubmit={cekStatusAduan} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={cekStatusNama}
+                    onChange={(e) => setCekStatusNama(e.target.value)}
+                    placeholder="Masukkan nama Anda"
+                    className="flex-1 px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none"
+                    disabled={loadingCekStatus}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loadingCekStatus}
+                    className="px-6 py-2 bg-gradient-to-r from-[#003366] to-[#0055aa] text-white rounded-lg font-semibold hover:from-[#00224d] hover:to-[#004488] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <Search size={18} />
+                    {loadingCekStatus ? "Mencari..." : "Cari"}
+                  </button>
+                </form>
+                
+                {statusAduan.length > 0 && (
+                  <div className="mt-6">
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="bg-gradient-to-r from-[#003366] to-[#0055aa] text-white">
+                            <th className="px-4 py-3 text-left rounded-tl-lg">Nama</th>
+                            <th className="px-4 py-3 text-left">Status</th>
+                            <th className="px-4 py-3 text-left rounded-tr-lg">Keterangan</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {statusAduan.map((item, index) => (
+                            <tr key={index} className="border-b border-blue-100 hover:bg-blue-50 transition">
+                              <td className="px-4 py-3 font-medium text-[#003366]">{item.nama}</td>
+                              <td className="px-4 py-3">
+                                {item.status ? (
+                                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white ${
+                                    statusOptions.find(s => s.value === item.status)?.color || "bg-gray-500"
+                                  }`}>
+                                    {statusOptions.find(s => s.value === item.status)?.label || item.status}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-500 text-white">
+                                    Diajukan
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-gray-700 text-sm">
+                                {item.keterangan_tindak_lanjut || "-"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {message.text && (
                 <div
                   className={`mb-6 rounded-xl p-4 flex items-center gap-3 ${

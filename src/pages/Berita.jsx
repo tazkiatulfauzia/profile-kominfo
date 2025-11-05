@@ -274,7 +274,7 @@ export default function Berita() {
             </div>
           ))
         ) : (
-          <p className="text-center col-span-full text-gray-600 py-10">Tidak ada berita.</p>
+          <p className="text-center col-span-full text-gray-600 py-10">Memuat Berita...</p>
         )}
       </div>
       </div>

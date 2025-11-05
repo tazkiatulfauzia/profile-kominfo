@@ -5,12 +5,9 @@ import { IconInstagram, IconFacebook, IconTwitterX } from "../icons/Icons";
 const menus = [
   { to: "/", label: "Beranda" },
   { to: "/profil", label: "Profil" },
-  { to: "/infrastruktur", label: "Infrastruktur" },
   { to: "/aplikasi", label: "Aplikasi" },
   { to: "/berita", label: "Berita" },
-  { to: "/informasi-publik", label: "Informasi Publik" },
   { to: "/aduan", label: "Aduan" },
-  { to: "/literasi", label: "Literasi" },
   { to: "/kontak", label: "Kontak" },
 ];
 

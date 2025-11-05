@@ -24,7 +24,24 @@ export async function getAduan() {
 export async function updateAduan(id, fields) {
   const { data, error } = await supabase
     .from("aduan")
-    .update(fields)
+    .update({ ...fields, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// Update tindak lanjut aduan (status, dinas_tujuan, keterangan)
+export async function updateTindakLanjut(id, status, dinas_tujuan, keterangan) {
+  const { data, error } = await supabase
+    .from("aduan")
+    .update({
+      status: status || 'diproses',
+      dinas_tujuan: dinas_tujuan || null,
+      keterangan_tindak_lanjut: keterangan || null,
+      updated_at: new Date().toISOString()
+    })
     .eq("id", id)
     .select()
     .single();

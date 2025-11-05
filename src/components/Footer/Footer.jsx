@@ -2,25 +2,23 @@ import { Phone, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-[#003366] to-[#002244] text-white mt-auto border-t-4 border-[#0055aa]">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+    <footer className="bg-gradient-to-b from-[#003366] to-[#002244] text-white fixed bottom-0 left-0 right-0 z-40 border-t-4 border-[#0055aa] shadow-lg">
+      <div className="w-full px-4 md:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
-          {/* Logo + Info */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3 mb-2">
-              <img src="/logo.png" alt="Logo" className="h-12" />
-              <div>
-                <p className="font-bold text-sm">Diskominfo</p>
-                <p className="text-xs text-blue-200">Kota Bukittinggi</p>
-              </div>
+          {/* Logo + Info - lebih ke kiri */}
+          <div className="flex items-start gap-3 md:justify-start">
+            <img src="/logo-kominfo.png" alt="Logo Kominfo" className="h-12 w-auto" />
+            <div className="flex flex-col space-y-2">
+              <p className="font-bold text-sm uppercase text-white">DISKOMINFO</p>
+              <p className="text-xs text-blue-100 leading-relaxed">
+                Dinas Komunikasi dan Informatika
+              </p>
+              <p className="text-xs text-blue-200">Kota Bukittinggi</p>
             </div>
-            <p className="text-xs text-blue-100 leading-relaxed">
-              Dinas Komunikasi dan Informatika Kota Bukittinggi
-            </p>
           </div>
 
           {/* Alamat */}
-          <div>
+          <div className="md:text-center">
             <h3 className="font-bold text-sm mb-3 text-blue-200">Alamat Kantor</h3>
             <p className="text-xs text-blue-100 leading-relaxed">
               Jl. Kusuma Bhakti, Kubu Gulai Bancah<br />
@@ -29,15 +27,15 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Kontak */}
-          <div>
+          {/* Kontak - lebih ke kanan */}
+          <div className="md:text-right md:ml-auto">
             <h3 className="font-bold text-sm mb-3 text-blue-200">Kontak Kami</h3>
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2 text-blue-100">
+            <div className="space-y-2 text-xs md:items-end md:flex md:flex-col">
+              <div className="flex items-center gap-2 text-blue-100 md:justify-end">
                 <Phone size={14} />
                 <span>0853-5566-4484</span>
               </div>
-              <div className="flex items-center gap-2 text-blue-100">
+              <div className="flex items-center gap-2 text-blue-100 md:justify-end">
                 <Mail size={14} />
                 <span className="break-all">diskominfo@bukittinggikota.go.id</span>
               </div>

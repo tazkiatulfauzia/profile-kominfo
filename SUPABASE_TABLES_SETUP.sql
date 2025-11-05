@@ -10,8 +10,29 @@ CREATE TABLE IF NOT EXISTS aduan (
   email TEXT NOT NULL,
   no_hp TEXT NOT NULL,
   isi_aduan TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  status TEXT DEFAULT 'baru',
+  dinas_tujuan TEXT,
+  keterangan_tindak_lanjut TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Tambahkan kolom tindak lanjut jika tabel sudah ada
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='aduan' AND column_name='status') THEN
+    ALTER TABLE aduan ADD COLUMN status TEXT DEFAULT 'baru';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='aduan' AND column_name='dinas_tujuan') THEN
+    ALTER TABLE aduan ADD COLUMN dinas_tujuan TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='aduan' AND column_name='keterangan_tindak_lanjut') THEN
+    ALTER TABLE aduan ADD COLUMN keterangan_tindak_lanjut TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='aduan' AND column_name='updated_at') THEN
+    ALTER TABLE aduan ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+  END IF;
+END $$;
 
 -- 2. Buat tabel KONTAK
 CREATE TABLE IF NOT EXISTS kontak (
@@ -38,6 +59,12 @@ CREATE POLICY "Allow public insert access on aduan"
 ON aduan FOR INSERT
 WITH CHECK (true);
 
+-- 9. Policy untuk tabel ADUAN - UPDATE (mengupdate)
+CREATE POLICY IF NOT EXISTS "Allow public update access on aduan"
+ON aduan FOR UPDATE
+USING (true)
+WITH CHECK (true);
+
 -- 7. Policy untuk tabel KONTAK - SELECT (membaca)
 CREATE POLICY "Allow public read access on kontak"
 ON kontak FOR SELECT
@@ -54,6 +81,7 @@ WITH CHECK (true);
 -- - RLS diaktifkan dengan policy yang mengizinkan semua operasi
 -- - Untuk production, pertimbangkan untuk membatasi SELECT hanya untuk admin
 -- ============================================
+
 
 
 
