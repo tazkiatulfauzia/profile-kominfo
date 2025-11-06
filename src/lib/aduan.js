@@ -1,3 +1,4 @@
+// src/lib/aduan.js
 import { supabase } from "./supabaseClient";
 
 // Tambah aduan baru
@@ -32,15 +33,16 @@ export async function updateAduan(id, fields) {
   return data;
 }
 
-// Update tindak lanjut aduan (status, dinas_tujuan, keterangan)
-export async function updateTindakLanjut(id, status, dinas_tujuan, keterangan) {
+// Update tindak lanjut aduan (status, dinas_tujuan, keterangan, website)
+export async function updateTindakLanjut(id, status, dinas_tujuan, keterangan, website) {
   const { data, error } = await supabase
     .from("aduan")
     .update({
-      status: status || 'diproses',
+      status: status || "diproses",
       dinas_tujuan: dinas_tujuan || null,
       keterangan_tindak_lanjut: keterangan || null,
-      updated_at: new Date().toISOString()
+      website: website || null,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", id)
     .select()
@@ -59,5 +61,3 @@ export async function deleteAduan(id) {
   if (error) throw error;
   return data;
 }
-
-

@@ -2,13 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { getBeritaBeranda } from "../lib/berita";
-import { BookOpen, FileText, Landmark } from "lucide-react";
+import { BookOpen, FileText, Landmark, ExternalLink, Globe } from "lucide-react";
 
 export default function Beranda() {
   const [beritaBeranda, setBeritaBeranda] = useState([]);
   const [aplikasi, setAplikasi] = useState([]);
 
-  // Ambil berita
   useEffect(() => {
     (async () => {
       try {
@@ -21,7 +20,6 @@ export default function Beranda() {
     })();
   }, []);
 
-  // Ambil aplikasi
   useEffect(() => {
     const fetchAplikasi = async () => {
       const { data, error } = await supabase
@@ -38,7 +36,6 @@ export default function Beranda() {
     fetchAplikasi();
   }, []);
 
-  // Data artikel literasi
   const artikelList = [
     {
       title: "Tentang Kota Bukittinggi",
@@ -56,28 +53,33 @@ export default function Beranda() {
       link: "https://share.google/4qDRYL9JHAGEDgCFw",
       icon: <FileText className="w-6 h-6 text-[#003366]" />,
     },
+    {
+      title: "Profil Kota Bukittinggi (Wikipedia)",
+      link: "https://id.wikipedia.org/wiki/Kota_Bukittinggi",
+      icon: <Globe className="w-6 h-6 text-[#003366]" />,
+    },
   ];
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* HERO */}
+
+      {/* HERO SECTION (PARALLAX) */}
       <section
-        className="relative text-white h-[500px] md:h-[600px]"
+        className="relative text-white h-screen"
         style={{
-          backgroundImage: "url('/jamgadang.jpg')",
+          backgroundImage: "url('/bukittinggi.jpeg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
+          backgroundAttachment: "fixed",
         }}
       >
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative max-w-7xl mx-auto px-6 h-full flex flex-col justify-center items-center text-center">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4 drop-shadow-lg">
             Selamat Datang di{" "}
-            <span className="text-[#FFB800]">
-              Portal Dinas Kominfo Bukittinggi
-            </span>
+            <span className="text-[#FFB800]">Portal Dinas Kominfo Bukittinggi</span>
           </h1>
-          <p className="text-sm md:text-lg text-gray-200 max-w-2xl mx-auto">
+          <p className="text-sm md:text-lg text-gray-200 max-w-2xl mx-auto drop-shadow">
             Akses berita, inovasi digital, serta berbagai layanan publik
             yang mendukung transformasi menuju Smart City Bukittinggi.
           </p>
@@ -138,9 +140,9 @@ export default function Beranda() {
                 rel="noopener noreferrer"
                 className="p-6 bg-white shadow rounded-xl hover:shadow-lg transition flex flex-col items-center text-center w-full max-w-sm"
               >
-                {app.url_logo && (
+                {app.logo_url && (
                   <img
-                    src={app.url_logo}
+                    src={app.logo_url}
                     alt={app.nama}
                     className="w-16 h-16 object-contain mb-4"
                   />
@@ -158,21 +160,29 @@ export default function Beranda() {
           )}
         </div>
 
-        <div className="text-center mt-8">
+        <div className="text-center mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link
             to="/aplikasi"
             className="inline-block bg-[#FFB800] text-black px-6 py-3 rounded-lg font-medium hover:bg-[#e6a700] transition"
           >
             Lihat Semua Aplikasi →
           </Link>
+          <a
+            href="https://ppid.bukittinggikota.go.id/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#003366] to-[#0055aa] text-white px-6 py-3 rounded-lg font-medium hover:from-[#00224d] hover:to-[#004488] transition shadow-lg hover:shadow-xl"
+          >
+            <ExternalLink size={18} />
+            Portal PPID
+          </a>
         </div>
       </section>
 
       {/* LITERASI DIGITAL */}
-      <section className="mx-auto max-w-7xl px-4 py-16 bg-gradient-to-br from-blue-50 via-white to-blue-50 min-h-screen">
+      <section className="mx-auto max-w-7xl px-4 py-16 bg-white">
         <div className="grid lg:grid-cols-3 gap-8">
           <section className="lg:col-span-2">
-            {/* Artikel Singkat */}
             <h2 className="text-3xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent border-l-4 border-[#003366] pl-4 mb-4">
               Artikel Singkat
             </h2>
@@ -188,7 +198,6 @@ export default function Beranda() {
               </ul>
             </article>
 
-            {/* Artikel Bukittinggi */}
             <h2 className="mt-10 text-3xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent border-l-4 border-[#003366] pl-4 mb-4">
               Artikel Bukittinggi
             </h2>
@@ -218,7 +227,6 @@ export default function Beranda() {
               ))}
             </div>
 
-            {/* Kutipan Literasi */}
             <h2 className="mt-10 text-3xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent border-l-4 border-[#003366] pl-4 mb-4">
               Kutipan Literasi
             </h2>
@@ -227,13 +235,17 @@ export default function Beranda() {
                 <p className="italic text-[#003366] text-lg font-medium leading-relaxed">
                   "Membaca adalah jendela dunia."
                 </p>
-                <p className="mt-4 text-sm text-[#003366]/80 font-semibold">— Pepatah Lama</p>
+                <p className="mt-4 text-sm text-[#003366]/80 font-semibold">
+                  — Pepatah Lama
+                </p>
               </div>
               <div className="p-6 bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg border border-blue-100">
                 <p className="italic text-[#003366] text-lg font-medium leading-relaxed">
                   "Literasi adalah kunci menuju peradaban."
                 </p>
-                <p className="mt-4 text-sm text-[#003366]/80 font-semibold">— Anonim</p>
+                <p className="mt-4 text-sm text-[#003366]/80 font-semibold">
+                  — Anonim
+                </p>
               </div>
             </div>
           </section>
