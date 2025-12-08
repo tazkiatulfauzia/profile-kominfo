@@ -4,7 +4,7 @@ import { Phone, Mail } from "lucide-react";
 export default function Footer() {
   return (
     // 🧩 DIUBAH: pastikan tidak ada margin-top, hapus mt-auto jika ada, pakai "mt-0"
-    <footer className="bg-gradient-to-b from-[#003366] to-[#002244] text-white border-t-4 border-[#0055aa] shadow-lg mt-0">
+    <footer className="bg-gradient-to-b from-[#003366] to-[#002244] text-white border-t-4 border-[#0055aa] shadow-lg">
       <div className="w-full px-4 md:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
           {/* Logo + Info */}

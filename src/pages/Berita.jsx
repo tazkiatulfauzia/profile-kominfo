@@ -28,10 +28,12 @@ export default function Berita() {
 
   async function loadBerita() {
     try {
-      const data = await getBerita(kategoriFilter === "semua" ? "" : kategoriFilter);
-      setBerita(data);
+      const data = await getBerita({ kategori: kategoriFilter === "semua" ? "" : kategoriFilter, per_page: 100 });
+      setBerita(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Gagal memuat berita:", error.message);
+      setBerita([]);
+      setMessage({ type: "error", text: error.message || "Gagal memuat berita" });
     }
   }
 

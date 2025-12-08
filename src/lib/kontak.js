@@ -1,46 +1,52 @@
-import { supabase } from "./supabaseClient";
+import apiClient from "./apiClient";
 
 // Tambah pesan kontak baru
 export async function tambahKontak(nama, email, pesan) {
-  const { data, error } = await supabase
-    .from("kontak")
-    .insert([{ nama, email, pesan }])
-    .select();
-  if (error) throw error;
-  return data;
+  try {
+    const response = await apiClient.post("/kontak", { nama, email, pesan });
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error("Error adding kontak:", error);
+    throw new Error(error.response?.data?.message || "Gagal mengirim pesan");
+  }
 }
 
-// Ambil semua pesan kontak (untuk admin)
-export async function getKontak() {
-  const { data, error } = await supabase
-    .from("kontak")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data;
+// Ambil semua pesan kontak (admin)
+export async function getKontak({ per_page = 100, page = 1, search = "" } = {}) {
+  try {
+    const params = { per_page, page };
+    if (search) params.search = search;
+
+    const response = await apiClient.get("/kontak", { params });
+    const payload = response.data?.data || response.data || [];
+
+    if (Array.isArray(payload)) return payload;
+    if (payload?.data) return payload.data; // pagination
+    return [];
+  } catch (error) {
+    console.error("Error fetching kontak:", error);
+    throw new Error(error.response?.data?.message || "Gagal mengambil data kontak");
+  }
 }
 
 // Update pesan kontak
 export async function updateKontak(id, fields) {
-  const { data, error } = await supabase
-    .from("kontak")
-    .update(fields)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  try {
+    const response = await apiClient.put(`/kontak/${id}`, fields);
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error("Error updating kontak:", error);
+    throw new Error(error.response?.data?.message || "Gagal memperbarui kontak");
+  }
 }
 
 // Hapus pesan kontak
 export async function deleteKontak(id) {
-  const { data, error } = await supabase
-    .from("kontak")
-    .delete()
-    .eq("id", id)
-    .select();
-  if (error) throw error;
-  return data;
+  try {
+    const response = await apiClient.delete(`/kontak/${id}`);
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error("Error deleting kontak:", error);
+    throw new Error(error.response?.data?.message || "Gagal menghapus kontak");
+  }
 }
-
-

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
 import { getBeritaBeranda } from "../lib/berita";
 import { BookOpen, FileText, Landmark, ExternalLink, Globe } from "lucide-react";
 
@@ -22,15 +21,13 @@ export default function Beranda() {
 
   useEffect(() => {
     const fetchAplikasi = async () => {
-      const { data, error } = await supabase
-        .from("aplikasi")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) {
+      try {
+        const { getAplikasi } = await import("../lib/aplikasi");
+        const data = await getAplikasi();
+        setAplikasi(Array.isArray(data) ? data : []);
+      } catch (error) {
         console.error("Gagal memuat aplikasi:", error);
         setAplikasi([]);
-      } else {
-        setAplikasi(data);
       }
     };
     fetchAplikasi();

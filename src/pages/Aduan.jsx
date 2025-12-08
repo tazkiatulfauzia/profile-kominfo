@@ -11,20 +11,16 @@ import {
   AlertCircle,
   Edit2,
   Trash2,
-  ArrowRight,
   X,
   Building2,
-  Search,
 } from "lucide-react";
 import {
   tambahAduan,
   getAduan,
   updateAduan,
   deleteAduan,
-  updateTindakLanjut,
 } from "../lib/aduan";
 import { useAuth } from "../context/AuthContext";
-import { supabase } from "../lib/supabaseClient";
 
 export default function Aduan() {
   const { user } = useAuth();
@@ -45,18 +41,12 @@ export default function Aduan() {
     email: "",
     no_hp: "",
     isi_aduan: "",
-  });
-  const [tindakLanjutId, setTindakLanjutId] = useState(null);
-  const [tindakLanjutLoading, setTindakLanjutLoading] = useState(false);
-  const [tindakLanjutForm, setTindakLanjutForm] = useState({
-    status: "diproses",
+    status: "diajukan",
     dinas_tujuan: "",
-    keterangan: "",
+    keterangan_tindak_lanjut: "",
     website: "",
   });
-  const [cekStatusNama, setCekStatusNama] = useState("");
-  const [statusAduan, setStatusAduan] = useState([]);
-  const [loadingCekStatus, setLoadingCekStatus] = useState(false);
+  // fitur cek status dihapus sesuai permintaan, tidak ada state tambahan
 
   // contoh mapping dinas -> website (ganti sesuai data asli nanti)
   const dinasWebsites = {
@@ -70,7 +60,6 @@ export default function Aduan() {
     "Dinas Lingkungan Hidup": "https://dlh.bukittinggikota.go.id",
     "Dinas Perdagangan": "https://disdag.bukittinggikota.go.id",
     "Dinas Pertanian": "https://dinaspertanian.bukittinggikota.go.id",
-    // ... tambahkan sesuai kebutuhan
     "Dinas lainnya": "",
   };
 
@@ -104,6 +93,7 @@ export default function Aduan() {
     if (isAdmin) {
       loadAduan();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin]);
 
   async function loadAduan() {
@@ -116,80 +106,7 @@ export default function Aduan() {
     }
   }
 
-  async function handleTindakLanjut(e) {
-    e.preventDefault();
-    setTindakLanjutLoading(true);
-    setMessage({ type: "", text: "" });
-    try {
-      // kirimkan website juga
-      await updateTindakLanjut(
-        tindakLanjutId,
-        tindakLanjutForm.status,
-        tindakLanjutForm.dinas_tujuan,
-        tindakLanjutForm.keterangan,
-        tindakLanjutForm.website
-      );
-      setMessage({ type: "success", text: "Tindak lanjut berhasil disimpan!" });
-      setTindakLanjutId(null);
-      setTindakLanjutForm({ status: "diproses", dinas_tujuan: "", keterangan: "", website: "" });
-      await loadAduan();
-    } catch (error) {
-      console.error("Error menyimpan tindak lanjut:", error);
-      setMessage({ type: "error", text: error.message || "Gagal menyimpan tindak lanjut" });
-    } finally {
-      setTindakLanjutLoading(false);
-    }
-  }
-
-  async function cekStatusAduan(e) {
-    e.preventDefault();
-    if (!cekStatusNama.trim()) {
-      setMessage({ type: "error", text: "Masukkan nama terlebih dahulu" });
-      return;
-    }
-    setLoadingCekStatus(true);
-    setMessage({ type: "", text: "" });
-    try {
-      // ambil website juga
-      const { data, error } = await supabase
-        .from("aduan")
-        .select("nama, status, keterangan_tindak_lanjut, website")
-        .ilike("nama", `%${cekStatusNama.trim()}%`)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        setStatusAduan(data);
-        setMessage({ type: "success", text: `Ditemukan ${data.length} aduan dengan nama "${cekStatusNama}"` });
-      } else {
-        setStatusAduan([]);
-        setMessage({ type: "error", text: `Tidak ditemukan aduan dengan nama "${cekStatusNama}"` });
-      }
-    } catch (error) {
-      console.error("Error cek status:", error);
-      setMessage({ type: "error", text: "Gagal memeriksa status aduan" });
-      setStatusAduan([]);
-    } finally {
-      setLoadingCekStatus(false);
-    }
-  }
-
-  function openTindakLanjut(item) {
-    setTindakLanjutId(item.id);
-    setTindakLanjutForm({
-      status: item.status || "diproses",
-      dinas_tujuan: item.dinas_tujuan || "",
-      keterangan: item.keterangan_tindak_lanjut || "",
-      website: item.website || dinasWebsites[item.dinas_tujuan] || "",
-    });
-  }
-
-  // ketika admin ganti dinas pada form tindak lanjut, otomatis isi website
-  function handleDinasChangeInForm(value) {
-    const website = dinasWebsites[value] || "";
-    setTindakLanjutForm((p) => ({ ...p, dinas_tujuan: value, website }));
-  }
+  // fitur tindak lanjut dan cek status dihapus sesuai permintaan
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -208,11 +125,31 @@ export default function Aduan() {
       console.error("Gagal mengirim aduan:", error);
       setMessage({
         type: "error",
-        text: error.message || "Gagal mengirim aduan. Silakan coba lagi.",
+        text: error?.response?.data?.message || error.message || "Gagal mengirim aduan. Silakan coba lagi.",
       });
     } finally {
       setLoading(false);
     }
+  }
+
+  // — NEW: buka edit form yang bisa ubah semua field —
+  function openEdit(item) {
+    setEditingId(item.id);
+    setEditForm({
+      nama: item.nama || "",
+      email: item.email || "",
+      no_hp: item.no_hp || "",
+      isi_aduan: item.isi_aduan || "",
+      status: item.status || "diajukan",
+      dinas_tujuan: item.dinas_tujuan || "",
+      keterangan_tindak_lanjut: item.keterangan_tindak_lanjut || "",
+      website: item.website || dinasWebsites[item.dinas_tujuan] || "",
+    });
+  }
+
+  function handleDinasChangeInEdit(value) {
+    const website = dinasWebsites[value] || "";
+    setEditForm((p) => ({ ...p, dinas_tujuan: value, website }));
   }
 
   return (
@@ -234,8 +171,7 @@ export default function Aduan() {
             {aduanList.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  {/* total kolom sekarang = 11 (No, Nama, Email, No HP, Isi, Status, Dinas, Website, Keterangan, Tanggal, Aksi) */}
-                  {!tindakLanjutId && !editingId && (
+                  {!editingId && (
                     <thead>
                       <tr className="bg-gradient-to-r from-[#003366] to-[#0055aa] text-white">
                         <th className="px-4 py-3 text-left rounded-tl-lg">No</th>
@@ -246,7 +182,7 @@ export default function Aduan() {
                         <th className="px-4 py-3 text-left">Status</th>
                         <th className="px-4 py-3 text-left">Dinas Tujuan</th>
                         <th className="px-4 py-3 text-left">Website</th>
-                        <th className="px-4 py-3 text-left">Keterangan Tindak Lanjut</th>
+                        <th className="px-4 py-3 text-left">Keterangan</th>
                         <th className="px-4 py-3 text-left">Tanggal</th>
                         <th className="px-4 py-3 text-left rounded-tr-lg">Aksi</th>
                       </tr>
@@ -256,117 +192,22 @@ export default function Aduan() {
                   <tbody>
                     {aduanList.map((item, index) => (
                       <tr key={item.id} className="border-b border-blue-100 hover:bg-blue-50 transition">
-                        {tindakLanjutId === item.id ? (
-                          // colspan disesuaikan menjadi 11
-                          <td colSpan={11} className="px-4 py-4 bg-gradient-to-br from-blue-50 to-green-50 border-2 border-blue-300">
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-lg font-bold text-[#003366] flex items-center gap-2">
-                                  <Building2 size={20} /> Tindak Lanjut Aduan
-                                </h3>
-                                <button
-                                  onClick={() => {
-                                    setTindakLanjutId(null);
-                                    setTindakLanjutForm({ status: "diproses", dinas_tujuan: "", keterangan: "", website: "" });
-                                  }}
-                                  className="p-1 text-gray-500 hover:text-red-600 transition"
-                                >
-                                  <X size={20} />
-                                </button>
-                              </div>
-
-                              <form onSubmit={handleTindakLanjut} className="space-y-4">
-                                <div className="grid md:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                                    <select
-                                      value={tindakLanjutForm.status}
-                                      onChange={(e) => setTindakLanjutForm({ ...tindakLanjutForm, status: e.target.value })}
-                                      className="w-full px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none"
-                                    >
-                                      {statusOptions.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>
-                                          {opt.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-
-                                  <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Dinas Tujuan</label>
-                                    <select
-                                      value={tindakLanjutForm.dinas_tujuan}
-                                      onChange={(e) => handleDinasChangeInForm(e.target.value)}
-                                      className="w-full px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none"
-                                    >
-                                      <option value="">Pilih Dinas...</option>
-                                      {daftarDinas.map((dinas) => (
-                                        <option key={dinas} value={dinas}>
-                                          {dinas}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                </div>
-
-                                <div>
-                                  <label className="block text-sm font-semibold text-gray-700 mb-2">Website (otomatis)</label>
-                                  <input
-                                    type="text"
-                                    value={tindakLanjutForm.website || ""}
-                                    onChange={(e) => setTindakLanjutForm({ ...tindakLanjutForm, website: e.target.value })}
-                                    placeholder="Website dinas (otomatis terisi saat pilih dinas)"
-                                    className="w-full px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="block text-sm font-semibold text-gray-700 mb-2">Keterangan Tindak Lanjut</label>
-                                  <textarea
-                                    value={tindakLanjutForm.keterangan}
-                                    onChange={(e) => setTindakLanjutForm({ ...tindakLanjutForm, keterangan: e.target.value })}
-                                    placeholder="Masukkan keterangan tindak lanjut..."
-                                    rows={3}
-                                    className="w-full px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none resize-none"
-                                  />
-                                </div>
-
-                                <div className="flex gap-3">
-                                  <button
-                                    type="submit"
-                                    disabled={tindakLanjutLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-2 bg-gradient-to-r from-[#003366] to-[#0055aa] text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                  >
-                                    <ArrowRight size={18} />
-                                    {tindakLanjutLoading ? "Menyimpan..." : "Simpan Tindak Lanjut"}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setTindakLanjutId(null);
-                                      setTindakLanjutForm({ status: "diproses", dinas_tujuan: "", keterangan: "", website: "" });
-                                    }}
-                                    className="px-6 py-2 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition"
-                                  >
-                                    Batal
-                                  </button>
-                                </div>
-                              </form>
-                            </div>
-                          </td>
-                        ) : editingId === item.id ? (
-                          // colspan juga 11 saat editing
+                        {editingId === item.id ? (
+                          // EDIT MODE (sekarang edit semua field)
                           <td colSpan={11} className="px-4 py-4 bg-blue-50">
                             <form
                               onSubmit={async (e) => {
                                 e.preventDefault();
                                 try {
-                                  await updateAduan(item.id, editForm);
+                                  // kirim hanya field yang ada di editForm
+                                  const payload = { ...editForm };
+                                  await updateAduan(item.id, payload);
                                   await loadAduan();
                                   setEditingId(null);
                                   setMessage({ type: "success", text: "Aduan berhasil diupdate!" });
                                 } catch (error) {
-                                  setMessage({ type: "error", text: error.message || "Gagal update aduan" });
+                                  console.error("Error update aduan:", error);
+                                  setMessage({ type: "error", text: error?.response?.data?.message || error.message || "Gagal update aduan" });
                                 }
                               }}
                               className="space-y-3"
@@ -397,14 +238,73 @@ export default function Aduan() {
                                   required
                                 />
                               </div>
-                              <textarea
-                                value={editForm.isi_aduan}
-                                onChange={(e) => setEditForm({ ...editForm, isi_aduan: e.target.value })}
-                                placeholder="Isi Aduan"
-                                rows={4}
-                                className="w-full px-3 py-2 border rounded-lg"
-                                required
-                              />
+
+                              <div>
+                                <textarea
+                                  value={editForm.isi_aduan}
+                                  onChange={(e) => setEditForm({ ...editForm, isi_aduan: e.target.value })}
+                                  placeholder="Isi Aduan"
+                                  rows={4}
+                                  className="w-full px-3 py-2 border rounded-lg"
+                                  required
+                                />
+                              </div>
+
+                              <div className="grid md:grid-cols-3 gap-3">
+                                <div>
+                                  <label className="block text-sm font-semibold mb-1">Status</label>
+                                  <select
+                                    value={editForm.status}
+                                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                                    className="w-full px-3 py-2 border rounded-lg"
+                                  >
+                                    {statusOptions.map((s) => (
+                                      <option key={s.value} value={s.value}>
+                                        {s.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-semibold mb-1">Dinas Tujuan</label>
+                                  <select
+                                    value={editForm.dinas_tujuan}
+                                    onChange={(e) => handleDinasChangeInEdit(e.target.value)}
+                                    className="w-full px-3 py-2 border rounded-lg"
+                                  >
+                                    <option value="">Pilih Dinas...</option>
+                                    {daftarDinas.map((d) => (
+                                      <option key={d} value={d}>
+                                        {d}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-semibold mb-1">Website</label>
+                                  <input
+                                    type="text"
+                                    value={editForm.website}
+                                    onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                                    placeholder="Website dinas / referensi"
+                                    className="w-full px-3 py-2 border rounded-lg"
+                                  />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-semibold mb-1">Keterangan Tindak Lanjut</label>
+                                <textarea
+                                  value={editForm.keterangan_tindak_lanjut}
+                                  onChange={(e) => setEditForm({ ...editForm, keterangan_tindak_lanjut: e.target.value })}
+                                  placeholder="Keterangan tindak lanjut"
+                                  rows={3}
+                                  className="w-full px-3 py-2 border rounded-lg"
+                                />
+                              </div>
+
                               <div className="flex gap-2">
                                 <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                                   Simpan
@@ -454,15 +354,9 @@ export default function Aduan() {
                               )}
                             </td>
 
-                            {/* Website */}
                             <td className="px-4 py-3 text-sm">
                               {item.website ? (
-                                <a
-                                  href={item.website}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[#003366] underline text-sm"
-                                >
+                                <a href={item.website} target="_blank" rel="noopener noreferrer" className="text-[#003366] underline text-sm">
                                   Website Dinas
                                 </a>
                               ) : (
@@ -470,10 +364,7 @@ export default function Aduan() {
                               )}
                             </td>
 
-                            {/* Keterangan Tindak Lanjut */}
-                            <td className="px-4 py-3 text-gray-700 text-sm">
-                              {item.keterangan_tindak_lanjut ? item.keterangan_tindak_lanjut : "-"}
-                            </td>
+                            <td className="px-4 py-3 text-gray-700 text-sm">{item.keterangan_tindak_lanjut || "-"}</td>
 
                             <td className="px-4 py-3 text-gray-600 text-sm">
                               {item.created_at
@@ -490,23 +381,7 @@ export default function Aduan() {
                             <td className="px-4 py-3">
                               <div className="flex gap-2 flex-wrap">
                                 <button
-                                  onClick={() => openTindakLanjut(item)}
-                                  className="p-2 text-green-600 hover:bg-green-100 rounded transition"
-                                  title="Tindak Lanjut"
-                                >
-                                  <ArrowRight size={16} />
-                                </button>
-
-                                <button
-                                  onClick={() => {
-                                    setEditingId(item.id);
-                                    setEditForm({
-                                      nama: item.nama,
-                                      email: item.email,
-                                      no_hp: item.no_hp,
-                                      isi_aduan: item.isi_aduan,
-                                    });
-                                  }}
+                                  onClick={() => openEdit(item)}
                                   className="p-2 text-blue-600 hover:bg-blue-100 rounded transition"
                                   title="Edit"
                                 >
@@ -521,7 +396,8 @@ export default function Aduan() {
                                         await loadAduan();
                                         setMessage({ type: "success", text: "Aduan berhasil dihapus!" });
                                       } catch (error) {
-                                        setMessage({ type: "error", text: error.message || "Gagal hapus aduan" });
+                                        console.error("Error delete aduan:", error);
+                                        setMessage({ type: "error", text: error?.response?.data?.message || error.message || "Gagal hapus aduan" });
                                       }
                                     }
                                   }}
@@ -545,7 +421,7 @@ export default function Aduan() {
           </div>
         </div>
       ) : (
-        // VIEW PUBLIC (form pengaduan + cek status)
+        // VIEW PUBLIC (form pengaduan saja, tanpa cek status)
         <div className="flex items-center justify-center">
           <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-blue-100">
             <div className="bg-gradient-to-r from-[#003366] to-[#0055aa] text-white py-10 px-6 text-center">
@@ -554,83 +430,6 @@ export default function Aduan() {
             </div>
 
             <div className="p-10 bg-gradient-to-br from-blue-50 to-white">
-              {/* Cek Status Aduan */}
-              <div className="mb-8 bg-white rounded-xl p-6 border-2 border-blue-200 shadow-sm">
-                <h3 className="text-xl font-bold text-[#003366] mb-4 flex items-center gap-2">
-                  <Search size={20} /> Cek Status Aduan
-                </h3>
-
-                <form onSubmit={cekStatusAduan} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={cekStatusNama}
-                    onChange={(e) => setCekStatusNama(e.target.value)}
-                    placeholder="Masukkan nama Anda"
-                    className="flex-1 px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none"
-                    disabled={loadingCekStatus}
-                  />
-                  <button
-                    type="submit"
-                    disabled={loadingCekStatus}
-                    className="px-6 py-2 bg-gradient-to-r from-[#003366] to-[#0055aa] text-white rounded-lg font-semibold hover:from-[#00224d] hover:to-[#004488] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    <Search size={18} /> {loadingCekStatus ? "Mencari..." : "Cari"}
-                  </button>
-                </form>
-
-                {/* Tampilkan hasil cek status (dengan kolom website) */}
-                {statusAduan.length > 0 && (
-                  <div className="mt-6">
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="bg-gradient-to-r from-[#003366] to-[#0055aa] text-white">
-                            <th className="px-4 py-3 text-left rounded-tl-lg">Nama</th>
-                            <th className="px-4 py-3 text-left">Status</th>
-                            <th className="px-4 py-3 text-left">Website</th>
-                            <th className="px-4 py-3 text-left rounded-tr-lg">Keterangan</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {statusAduan.map((item, index) => (
-                            <tr key={index} className="border-b border-blue-100 hover:bg-blue-50 transition">
-                              <td className="px-4 py-3 font-medium text-[#003366]">{item.nama}</td>
-                              <td className="px-4 py-3">
-                                {item.status ? (
-                                  <span
-                                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white ${
-                                      statusOptions.find((s) => s.value === item.status)?.color || "bg-gray-500"
-                                    }`}
-                                  >
-                                    {statusOptions.find((s) => s.value === item.status)?.label || item.status}
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-500 text-white">
-                                    Diajukan
-                                  </span>
-                                )}
-                              </td>
-
-                              <td className="px-4 py-3 text-sm">
-                                {item.website ? (
-                                  <a href={item.website} target="_blank" rel="noopener noreferrer" className="text-[#003366] underline">
-                                    Kunjungi Website Dinas
-                                  </a>
-                                ) : (
-                                  <span className="text-gray-400">-</span>
-                                )}
-                              </td>
-
-                              <td className="px-4 py-3 text-gray-700 text-sm">{item.keterangan_tindak_lanjut || "-"}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {message.text && (
                 <div
                   className={`mb-6 rounded-xl p-4 flex items-center gap-3 ${

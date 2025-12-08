@@ -1,5 +1,5 @@
 // src/App.jsx
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import "./App.css";
 
 import Header from "./components/Header/Header";
@@ -14,8 +14,12 @@ import Aduan from "./pages/Aduan";
 import Kontak from "./pages/Kontak";
 import Account from "./pages/Account";
 import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
+  const location = useLocation();
+  const isAdminLayout = location.pathname.startsWith("/admin");
+
   const menus = [
     { name: "Beranda", path: "/" },
     { name: "Aduan", path: "/aduan" },
@@ -24,12 +28,14 @@ function App() {
     { name: "Kontak", path: "/kontak" },
   ];
 
+  const renderHeader = !isAdminLayout;
+  const renderFooter = !isAdminLayout;
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      {renderHeader && <Header />}
 
-      {/* ✅ Konten halaman */}
-      <main className="flex-1 pt-[80px] pb-[200px]">
+      <main className={renderHeader ? "flex-1 pt-[80px] pb-6" : "flex-1"}>
         <Routes>
           <Route path="/" element={<Beranda />} />
           <Route path="/dashboard" element={<Beranda />} />
@@ -39,13 +45,13 @@ function App() {
           <Route path="/aduan" element={<Aduan />} />
           <Route path="/kontak" element={<Kontak />} />
           <Route path="/account" element={<Account />} />
-          {/* Route login admin tersembunyi - tidak muncul di menu */}
+          {/* Admin area */}
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </main>
 
-      {/* ✅ Footer selalu tampil */}
-      <Footer />
+      {renderFooter && <Footer />}
     </div>
   );
 }

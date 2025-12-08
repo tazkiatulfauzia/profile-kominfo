@@ -29,8 +29,8 @@ export default function Aplikasi() {
       const data = await getAplikasi();
       setApps(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Gagal memuat aplikasi:", error);
-      setMessage({ type: "error", text: "Gagal memuat data aplikasi. Silakan refresh halaman." });
+      console.error("Gagal memuat aplikasi/website:", error);
+      setMessage({ type: "error", text: "Gagal memuat data aplikasi/website. Silakan refresh halaman." });
       setApps([]);
     } finally {
       setLoadingData(false);
@@ -45,30 +45,30 @@ export default function Aplikasi() {
     try {
       if (editingId) {
         await updateAplikasi(editingId, form);
-        setMessage({ type: "success", text: "Aplikasi berhasil diupdate!" });
+        setMessage({ type: "success", text: "Aplikasi/Website berhasil diupdate!" });
       } else {
         await tambahAplikasi(form.nama, form.deskripsi, form.link, form.logo_url || null);
-        setMessage({ type: "success", text: "Aplikasi berhasil ditambahkan!" });
+        setMessage({ type: "success", text: "Aplikasi/Website berhasil ditambahkan!" });
       }
       setForm({ nama: "", deskripsi: "", link: "", logo_url: "" });
       setShowAddForm(false);
       setEditingId(null);
       await loadAplikasi();
     } catch (error) {
-      setMessage({ type: "error", text: error.message || "Gagal menyimpan aplikasi" });
+      setMessage({ type: "error", text: error.message || "Gagal menyimpan aplikasi/website" });
     } finally {
       setLoading(false);
     }
   }
 
   async function handleDelete(id, nama) {
-    if (confirm(`Hapus aplikasi "${nama}"?`)) {
+    if (confirm(`Hapus aplikasi/website "${nama}"?`)) {
       try {
         await deleteAplikasi(id);
-        setMessage({ type: "success", text: "Aplikasi berhasil dihapus!" });
+        setMessage({ type: "success", text: "Aplikasi/Website berhasil dihapus!" });
         await loadAplikasi();
       } catch (error) {
-        setMessage({ type: "error", text: error.message || "Gagal hapus aplikasi" });
+        setMessage({ type: "error", text: error.message || "Gagal hapus aplikasi/website" });
       }
     }
   }
@@ -96,10 +96,10 @@ export default function Aplikasi() {
         {/* Header */}
         <div className="text-center mb-10">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent">
-            Aplikasi Resmi
+            Aplikasi/Website Resmi
           </h2>
           <p className="mt-3 text-[#003366]/80 text-lg max-w-2xl mx-auto">
-            Akses aplikasi resmi Dinas Kominfo untuk pelayanan publik dan inovasi digital.
+            Akses aplikasi/website resmi Dinas Kominfo untuk pelayanan publik dan inovasi digital.
           </p>
           {isAdmin && (
             <button
@@ -110,7 +110,7 @@ export default function Aplikasi() {
               className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#003366] to-[#0055aa] text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition hover:from-[#00224d] hover:to-[#004488]"
             >
               <Plus size={20} />
-              {showAddForm ? "Batal" : "Tambah Aplikasi"}
+              {showAddForm ? "Batal" : "Tambah Aplikasi/Website"}
             </button>
           )}
           {message.text && (
@@ -126,12 +126,12 @@ export default function Aplikasi() {
         {showAddForm && isAdmin && (
           <div className="mb-8 bg-white rounded-2xl shadow-xl p-6 border border-blue-200">
             <h3 className="text-xl font-bold text-[#003366] mb-4">
-              {editingId ? "Edit Aplikasi" : "Tambah Aplikasi Baru"}
+              {editingId ? "Edit Aplikasi/Website" : "Tambah Aplikasi/Website Baru"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Nama Aplikasi</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Nama Aplikasi/Website</label>
                   <input
                     type="text"
                     value={form.nama}
@@ -142,7 +142,7 @@ export default function Aplikasi() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Link Aplikasi</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Link Aplikasi/Website</label>
                   <input
                     type="url"
                     value={form.link}
@@ -157,7 +157,7 @@ export default function Aplikasi() {
                 <textarea
                   value={form.deskripsi}
                   onChange={(e) => setForm({...form, deskripsi: e.target.value})}
-                  placeholder="Deskripsi aplikasi..."
+                  placeholder="Deskripsi aplikasi/website..."
                   rows={3}
                   className="w-full px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366] outline-none resize-none"
                   required
@@ -197,7 +197,7 @@ export default function Aplikasi() {
         {/* Daftar Aplikasi */}
         {loadingData ? (
           <div className="text-center py-12">
-            <p className="text-gray-600">Memuat data aplikasi...</p>
+            <p className="text-gray-600">Memuat data aplikasi/website...</p>
           </div>
         ) : apps.length > 0 ? (
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -242,7 +242,7 @@ export default function Aplikasi() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-sm font-medium text-[#003366] hover:text-[#0055aa] transition group-hover:underline"
                   >
-                    Akses Aplikasi →
+                    Akses Aplikasi/Website →
                   </a>
                 ) : (
                   <span className="text-sm text-gray-500">Segera hadir</span>
@@ -252,7 +252,7 @@ export default function Aplikasi() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-600">Belum ada aplikasi. {isAdmin && "Klik 'Tambah Aplikasi' untuk menambahkan."}</p>
+            <p className="text-gray-600">Belum ada aplikasi/website. {isAdmin && "Klik 'Tambah Aplikasi' untuk menambahkan."}</p>
           </div>
         )}
       </div>

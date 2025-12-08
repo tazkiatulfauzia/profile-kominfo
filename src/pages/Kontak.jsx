@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { IconInstagram, IconFacebook, IconTwitterX } from "../components/icons/Icons";
-import { MapPin, Phone, Mail, Send, CheckCircle, AlertCircle, Edit2, Trash2, X } from "lucide-react";
-import { tambahKontak, getKontak, updateKontak, deleteKontak } from "../lib/kontak";
+import { MapPin, Phone, Mail, Send, CheckCircle, AlertCircle, Edit2, X } from "lucide-react";
+import { tambahKontak, getKontak, updateKontak } from "../lib/kontak";
 import { useAuth } from "../context/AuthContext";
 
 export default function Kontak() {
@@ -192,23 +192,6 @@ export default function Kontak() {
                                     title="Edit"
                                   >
                                     <Edit2 size={16} />
-                                  </button>
-                                  <button
-                                    onClick={async () => {
-                                      if (confirm(`Hapus pesan dari ${item.nama}?`)) {
-                                        try {
-                                          await deleteKontak(item.id);
-                                          await loadKontak();
-                                          setMessage({ type: "success", text: "Pesan berhasil dihapus!" });
-                                        } catch (error) {
-                                          setMessage({ type: "error", text: error.message || "Gagal hapus pesan" });
-                                        }
-                                      }
-                                    }}
-                                    className="p-2 text-red-600 hover:bg-red-100 rounded transition"
-                                    title="Hapus"
-                                  >
-                                    <Trash2 size={16} />
                                   </button>
                                 </div>
                               </td>

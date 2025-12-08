@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   try {
-    return useContext(AuthContext);
+  return useContext(AuthContext);
   } catch (error) {
     console.error("Error in useAuth:", error);
     return { user: null, login: async () => ({ ok: false }), logout: () => {} };
