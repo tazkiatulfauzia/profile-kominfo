@@ -4,6 +4,8 @@ import "./App.css";
 
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
+import AdminLayout from "./components/AdminLayout";
+import { useAuth } from "./context/AuthContext";
 
 // Import semua halaman
 import Beranda from "./pages/Beranda";
@@ -18,7 +20,13 @@ import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   const location = useLocation();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
   const isAdminLayout = location.pathname.startsWith("/admin");
+  
+  // Halaman yang perlu admin layout (sidebar) jika user adalah admin
+  const adminPages = ["/aplikasi", "/berita", "/aduan", "/kontak", "/account"];
+  const needsAdminLayout = isAdmin && adminPages.includes(location.pathname);
 
   const menus = [
     { name: "Beranda", path: "/" },
@@ -28,26 +36,40 @@ function App() {
     { name: "Kontak", path: "/kontak" },
   ];
 
-  const renderHeader = !isAdminLayout;
-  const renderFooter = !isAdminLayout;
+  const renderHeader = !isAdminLayout && !needsAdminLayout;
+  const renderFooter = !isAdminLayout && !needsAdminLayout;
 
   return (
     <div className="min-h-screen flex flex-col">
       {renderHeader && <Header />}
 
-      <main className={renderHeader ? "flex-1 pt-[80px] pb-6" : "flex-1"}>
+      <main className={renderHeader ? "flex-1 pt-[80px]" : "flex-1"}>
         <Routes>
           <Route path="/" element={<Beranda />} />
-          <Route path="/dashboard" element={<Beranda />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/profil" element={<Profil />} />
-          <Route path="/aplikasi" element={<Aplikasi />} />
-          <Route path="/berita" element={<Berita />} />
-          <Route path="/aduan" element={<Aduan />} />
-          <Route path="/kontak" element={<Kontak />} />
-          <Route path="/account" element={<Account />} />
+          <Route 
+            path="/aplikasi" 
+            element={needsAdminLayout ? <AdminLayout><Aplikasi /></AdminLayout> : <Aplikasi />} 
+          />
+          <Route 
+            path="/berita" 
+            element={needsAdminLayout ? <AdminLayout><Berita /></AdminLayout> : <Berita />} 
+          />
+          <Route 
+            path="/aduan" 
+            element={needsAdminLayout ? <AdminLayout><Aduan /></AdminLayout> : <Aduan />} 
+          />
+          <Route 
+            path="/kontak" 
+            element={needsAdminLayout ? <AdminLayout><Kontak /></AdminLayout> : <Kontak />} 
+          />
+          <Route 
+            path="/account" 
+            element={needsAdminLayout ? <AdminLayout><Account /></AdminLayout> : <Account />} 
+          />
           {/* Admin area */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </main>
 

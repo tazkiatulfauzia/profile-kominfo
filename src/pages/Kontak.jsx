@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { IconInstagram, IconFacebook, IconTwitterX } from "../components/icons/Icons";
-import { MapPin, Phone, Mail, Send, CheckCircle, AlertCircle, Edit2, X } from "lucide-react";
-import { tambahKontak, getKontak, updateKontak } from "../lib/kontak";
+import { MapPin, Phone, Mail, Send, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
+import { tambahKontak, getKontak, deleteKontak } from "../lib/kontak";
 import { useAuth } from "../context/AuthContext";
 
 export default function Kontak() {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
   const [loading, setLoading] = useState(false);
+  const [loadingKontak, setLoadingKontak] = useState(true);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [kontakList, setKontakList] = useState([]);
   const [form, setForm] = useState({
-    nama: "",
-    email: "",
-    pesan: "",
-  });
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({
     nama: "",
     email: "",
     pesan: "",
@@ -31,10 +26,24 @@ export default function Kontak() {
 
   async function loadKontak() {
     try {
+      setLoadingKontak(true);
       const data = await getKontak();
       setKontakList(data || []);
     } catch (error) {
       console.error("Gagal memuat kontak:", error);
+    } finally {
+      setLoadingKontak(false);
+    }
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm("Yakin ingin menghapus pesan kontak ini?")) return;
+    try {
+      await deleteKontak(id);
+      await loadKontak();
+      setMessage({ type: "success", text: "Pesan kontak berhasil dihapus!" });
+    } catch (error) {
+      setMessage({ type: "error", text: error.message || "Gagal menghapus pesan kontak" });
     }
   }
 
@@ -62,8 +71,8 @@ export default function Kontak() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 text-[#002244] min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 py-14">
+    <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 text-[#002244] min-h-screen pb-6">
+      <div className="mx-auto max-w-7xl px-4 pt-14">
         {/* Heading */}
         <div className="text-center mb-6">
           <h2 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent relative inline-block">
@@ -88,7 +97,9 @@ export default function Kontak() {
                 </div>
               )}
               <h3 className="text-2xl font-bold text-[#003366] mb-6">Daftar Pesan Kontak</h3>
-              {kontakList.length > 0 ? (
+              {loadingKontak ? (
+                <p className="text-center py-8 text-gray-600">Memuat pesan masuk...</p>
+              ) : kontakList.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -104,99 +115,30 @@ export default function Kontak() {
                     <tbody>
                       {kontakList.map((item, index) => (
                         <tr key={item.id} className="border-b border-blue-100 hover:bg-blue-50 transition">
-                          {editingId === item.id ? (
-                            <td colSpan={6} className="px-4 py-4 bg-blue-50">
-                              <form onSubmit={async (e) => {
-                                e.preventDefault();
-                                try {
-                                  await updateKontak(item.id, editForm);
-                                  await loadKontak();
-                                  setEditingId(null);
-                                  setMessage({ type: "success", text: "Pesan berhasil diupdate!" });
-                                } catch (error) {
-                                  setMessage({ type: "error", text: error.message || "Gagal update pesan" });
-                                }
-                              }} className="space-y-3">
-                                <div className="grid md:grid-cols-2 gap-3">
-                                  <input
-                                    type="text"
-                                    value={editForm.nama}
-                                    onChange={(e) => setEditForm({...editForm, nama: e.target.value})}
-                                    placeholder="Nama"
-                                    className="px-3 py-2 border rounded-lg"
-                                    required
-                                  />
-                                  <input
-                                    type="email"
-                                    value={editForm.email}
-                                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                                    placeholder="Email"
-                                    className="px-3 py-2 border rounded-lg"
-                                    required
-                                  />
-                                </div>
-                                <textarea
-                                  value={editForm.pesan}
-                                  onChange={(e) => setEditForm({...editForm, pesan: e.target.value})}
-                                  placeholder="Pesan"
-                                  rows={3}
-                                  className="w-full px-3 py-2 border rounded-lg"
-                                  required
-                                />
-                                <div className="flex gap-2">
-                                  <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                                  >
-                                    Simpan
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setEditingId(null)}
-                                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                                  >
-                                    Batal
-                                  </button>
-                                </div>
-                              </form>
-                            </td>
-                          ) : (
-                            <>
-                              <td className="px-4 py-3 text-gray-700">{index + 1}</td>
-                              <td className="px-4 py-3 font-medium text-[#003366]">{item.nama}</td>
-                              <td className="px-4 py-3 text-gray-700">{item.email}</td>
-                              <td className="px-4 py-3 text-gray-700 max-w-md truncate">{item.pesan}</td>
-                              <td className="px-4 py-3 text-gray-600 text-sm">
-                                {item.created_at
-                                  ? new Date(item.created_at).toLocaleDateString("id-ID", {
-                                      year: "numeric",
-                                      month: "short",
-                                      day: "numeric",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
-                                  : "-"}
-                              </td>
-                              <td className="px-4 py-3">
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={() => {
-                                      setEditingId(item.id);
-                                      setEditForm({
-                                        nama: item.nama,
-                                        email: item.email,
-                                        pesan: item.pesan,
-                                      });
-                                    }}
-                                    className="p-2 text-blue-600 hover:bg-blue-100 rounded transition"
-                                    title="Edit"
-                                  >
-                                    <Edit2 size={16} />
-                                  </button>
-                                </div>
-                              </td>
-                            </>
-                          )}
+                          <td className="px-4 py-3 text-gray-700">{index + 1}</td>
+                          <td className="px-4 py-3 font-medium text-[#003366]">{item.nama}</td>
+                          <td className="px-4 py-3 text-gray-700">{item.email}</td>
+                          <td className="px-4 py-3 text-gray-700 max-w-md truncate">{item.pesan}</td>
+                          <td className="px-4 py-3 text-gray-600 text-sm">
+                            {item.created_at
+                              ? new Date(item.created_at).toLocaleDateString("id-ID", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="p-2 text-red-600 hover:bg-red-100 rounded transition"
+                              title="Hapus"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

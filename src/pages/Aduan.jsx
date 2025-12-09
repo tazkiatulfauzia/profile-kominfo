@@ -27,6 +27,7 @@ export default function Aduan() {
   const isAdmin = user?.role === "Admin";
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingAduan, setLoadingAduan] = useState(true);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [aduanList, setAduanList] = useState([]);
   const [form, setForm] = useState({
@@ -98,11 +99,14 @@ export default function Aduan() {
 
   async function loadAduan() {
     try {
+      setLoadingAduan(true);
       const data = await getAduan();
       setAduanList(data || []);
     } catch (error) {
       console.error("Gagal memuat aduan:", error);
       setMessage({ type: "error", text: "Gagal memuat data aduan" });
+    } finally {
+      setLoadingAduan(false);
     }
   }
 
@@ -153,7 +157,7 @@ export default function Aduan() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 py-10 px-4">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 pt-10 px-4 pb-6">
       {isAdmin ? (
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-200">
@@ -168,7 +172,9 @@ export default function Aduan() {
             )}
             <h2 className="text-3xl font-bold text-[#003366] mb-6">Daftar Aduan Masuk</h2>
 
-            {aduanList.length > 0 ? (
+            {loadingAduan ? (
+              <p className="text-center py-8 text-gray-600">Memuat aduan masuk...</p>
+            ) : aduanList.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   {!editingId && (

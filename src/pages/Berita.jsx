@@ -29,7 +29,14 @@ export default function Berita() {
   async function loadBerita() {
     try {
       const data = await getBerita({ kategori: kategoriFilter === "semua" ? "" : kategoriFilter, per_page: 100 });
-      setBerita(Array.isArray(data) ? data : []);
+      let filteredData = Array.isArray(data) ? data : [];
+      
+      // Filter di frontend juga sebagai backup jika API tidak memfilter dengan benar
+      if (kategoriFilter !== "semua") {
+        filteredData = filteredData.filter((item) => item.kategori === kategoriFilter);
+      }
+      
+      setBerita(filteredData);
     } catch (error) {
       console.error("Gagal memuat berita:", error.message);
       setBerita([]);
@@ -103,48 +110,38 @@ export default function Berita() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 min-h-screen py-10">
+    <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 min-h-screen pt-12 pb-6">
       <div className="max-w-7xl mx-auto px-4">
-        {/* KATEGORI FILTER */}
-        <div className="flex justify-center gap-6 mb-8 border-b-2 border-blue-200 pb-4">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h2 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-[#003366] via-[#0055aa] to-[#003366] bg-clip-text text-transparent mb-4">
+            Portal Berita
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Dapatkan informasi terkini seputar Dinas Komunikasi dan Informatika Kota Bukittinggi
+          </p>
+        </div>
+
+        {/* KATEGORI FILTER - Professional Design */}
+        <div className="flex justify-center gap-4 mb-10">
           {["semua", "kominfo", "bukittinggi"].map((kat) => (
             <button
               key={kat}
               onClick={() => handleKategoriFilter(kat)}
-              className={`font-semibold px-4 py-2 rounded-lg transition ${
+              className={`font-semibold px-6 py-3 rounded-xl transition-all duration-300 transform ${
                 kategoriFilter === kat
-                  ? "bg-gradient-to-r from-[#003366] to-[#0055aa] text-white shadow-lg"
-                  : "text-[#003366] hover:bg-blue-100"
+                  ? "bg-gradient-to-r from-[#003366] to-[#0055aa] text-white shadow-xl scale-105"
+                  : "text-[#003366] bg-white hover:bg-blue-50 border-2 border-blue-200 hover:border-[#003366] hover:scale-105"
               }`}
             >
-              {kat === "semua" ? "Semua" : kat === "kominfo" ? "Kominfo" : "Kota Bukittinggi"}
+              {kat === "semua" ? "Semua Berita" : kat === "kominfo" ? "Kominfo" : "Kota Bukittinggi"}
             </button>
           ))}
         </div>
 
-        <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent">
-          {judul}
-        </h2>
-
-        {/* BUTTON TAMBAH BERITA - Hanya untuk Admin */}
-        {isAdmin && (
-          <div className="text-center mb-6">
-            <button
-              onClick={() => {
-                setForm({ id: null, judul: "", deskripsi: "", gambar: "", link: "", kategori: "kominfo" });
-                setShowForm(!showForm);
-                setMessage({ type: "", text: "" });
-              }}
-              className="bg-gradient-to-r from-[#003366] to-[#0055aa] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-[#00224d] hover:to-[#004488] transition"
-            >
-              {showForm ? "Batal" : "Tambah Berita"}
-            </button>
-          </div>
-        )}
-
         {/* FORM TAMBAH / EDIT - Hanya untuk Admin */}
         {isAdmin && showForm && (
-          <form onSubmit={handleSubmit} className="mb-8 border-2 border-blue-200 rounded-2xl p-6 max-w-2xl mx-auto bg-white shadow-lg">
+          <form onSubmit={handleSubmit} className="mb-10 border-2 border-blue-200 rounded-2xl p-8 max-w-2xl mx-auto bg-white shadow-xl">
           {/* Pesan sukses/error */}
           {message.text && (
             <div
@@ -220,65 +217,105 @@ export default function Berita() {
         </form>
       )}
 
-      {/* LIST BERITA - Card View untuk User, dengan Edit/Delete untuk Admin */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* LIST BERITA - Professional Card Design */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {berita.length > 0 ? (
           berita.map((item) => (
-            <div
+            <article
               key={item.id}
-              className="bg-gradient-to-br from-white to-blue-50 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 border border-blue-100"
+              className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-slate-200 flex flex-col"
             >
+              {/* Image Container with Overlay */}
               {item.gambar && (
-                <div className="w-full h-48 overflow-hidden bg-gray-200">
+                <div className="relative w-full h-56 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
                   <img
                     src={item.gambar}
                     alt={item.judul}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     onError={(e) => {
                       e.target.src = "https://via.placeholder.com/400x200?text=No+Image";
                     }}
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  {/* Category Badge */}
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 bg-[#003366] text-white text-xs font-semibold rounded-full shadow-lg">
+                      {item.kategori === "kominfo" ? "Kominfo" : "Kota Bukittinggi"}
+                    </span>
+                  </div>
                 </div>
               )}
-              <div className="p-5">
-                <h3 className="font-bold text-[#003366] text-lg mb-2 line-clamp-2">{item.judul}</h3>
-                <p className="text-sm text-gray-700 mb-3 line-clamp-3">{item.deskripsi}</p>
-                {item.link && (
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-2 text-[#0055aa] hover:text-[#003366] font-semibold text-sm transition"
-                  >
-                    Baca Selengkapnya →
-                  </a>
-                )}
-                {/* Tombol Edit/Delete hanya untuk Admin */}
-                {isAdmin && (
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="p-2 text-blue-600 hover:bg-blue-100 rounded transition"
-                      title="Edit"
+              
+              {/* Content */}
+              <div className="p-6 flex-1 flex flex-col">
+                <h3 className="font-bold text-[#003366] text-xl mb-3 line-clamp-2 group-hover:text-[#0055aa] transition-colors">
+                  {item.judul}
+                </h3>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-3 flex-1 leading-relaxed">
+                  {item.deskripsi}
+                </p>
+                
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                  {item.link && (
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-[#0055aa] hover:text-[#003366] font-semibold text-sm transition-colors group/link"
                     >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-red-600 hover:bg-red-100 rounded transition"
-                      title="Hapus"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                )}
+                      Baca Selengkapnya
+                      <span className="transform group-hover/link:translate-x-1 transition-transform">→</span>
+                    </a>
+                  )}
+                  
+                  {/* Admin Actions */}
+                  {isAdmin && (
+                    <div className="flex gap-2 ml-auto">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-110"
+                        title="Edit"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
+                        title="Hapus"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </article>
           ))
         ) : (
-          <p className="text-center col-span-full text-gray-600 py-10">Memuat Berita...</p>
+          <div className="col-span-full text-center py-16">
+            <div className="inline-block p-8 bg-white rounded-2xl shadow-md border border-slate-200">
+              <p className="text-gray-600 text-lg">Memuat Berita...</p>
+            </div>
+          </div>
         )}
       </div>
+
+        {/* BUTTON TAMBAH BERITA - Hanya untuk Admin - Dipindah ke bawah */}
+        {isAdmin && (
+          <div className="text-center mt-8">
+            <button
+              onClick={() => {
+                setForm({ id: null, judul: "", deskripsi: "", gambar: "", link: "", kategori: "kominfo" });
+                setShowForm(!showForm);
+                setMessage({ type: "", text: "" });
+              }}
+              className="bg-gradient-to-r from-[#003366] to-[#0055aa] text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-[#00224d] hover:to-[#004488] transition-all transform hover:scale-105"
+            >
+              {showForm ? "✕ Batal" : "+ Tambah Berita Baru"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

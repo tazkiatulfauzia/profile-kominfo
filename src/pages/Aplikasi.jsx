@@ -91,8 +91,8 @@ export default function Aplikasi() {
   }
 
   return (
-    <div className="w-full bg-gradient-to-br from-blue-50 via-white to-blue-50 min-h-screen">
-      <div className="mx-auto max-w-7xl px-6 py-12">
+    <div className="w-full bg-gradient-to-br from-blue-50 via-white to-blue-50 min-h-screen pb-6">
+      <div className="mx-auto max-w-7xl px-6 pt-12">
         {/* Header */}
         <div className="text-center mb-10">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent">
@@ -101,18 +101,6 @@ export default function Aplikasi() {
           <p className="mt-3 text-[#003366]/80 text-lg max-w-2xl mx-auto">
             Akses aplikasi/website resmi Dinas Kominfo untuk pelayanan publik dan inovasi digital.
           </p>
-          {isAdmin && (
-            <button
-              onClick={() => {
-                setShowAddForm(!showAddForm);
-                if (showAddForm) cancelEdit();
-              }}
-              className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#003366] to-[#0055aa] text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition hover:from-[#00224d] hover:to-[#004488]"
-            >
-              <Plus size={20} />
-              {showAddForm ? "Batal" : "Tambah Aplikasi/Website"}
-            </button>
-          )}
           {message.text && (
             <div className={`mt-4 mx-auto max-w-md p-3 rounded-lg ${
               message.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
@@ -253,6 +241,22 @@ export default function Aplikasi() {
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-600">Belum ada aplikasi/website. {isAdmin && "Klik 'Tambah Aplikasi' untuk menambahkan."}</p>
+          </div>
+        )}
+
+        {/* BUTTON TAMBAH APLIKASI - Hanya untuk Admin - Dipindah ke bawah */}
+        {isAdmin && (
+          <div className="text-center mt-8">
+            <button
+              onClick={() => {
+                setShowAddForm(!showAddForm);
+                if (showAddForm) cancelEdit();
+              }}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#003366] to-[#0055aa] text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition hover:from-[#00224d] hover:to-[#004488]"
+            >
+              <Plus size={20} />
+              {showAddForm ? "Batal" : "Tambah Aplikasi/Website"}
+            </button>
           </div>
         )}
       </div>

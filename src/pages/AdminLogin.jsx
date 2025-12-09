@@ -20,8 +20,8 @@ export default function AdminLogin() {
       const result = await login(email, password);
       
       if (result.ok) {
-        // Login berhasil, redirect ke account atau beranda
-        navigate("/account");
+        // Login berhasil, redirect ke admin dashboard
+        navigate("/admin/dashboard");
       } else {
         setError("login gagal!");
       }

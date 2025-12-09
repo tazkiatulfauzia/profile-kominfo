@@ -4,7 +4,7 @@ import { IconChat } from "../components/icons/Icons";
 export default function Profil(){
   const [open, setOpen] = useState(null);
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 pt-8 pb-6">
       <section className="grid md:grid-cols-2 gap-8">
         <div>
           <h2 className="text-2xl font-bold text-[#003366]">Visi</h2>

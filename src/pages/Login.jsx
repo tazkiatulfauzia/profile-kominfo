@@ -41,8 +41,8 @@ export default function Login() {
         return;
       }
 
-      // 3. Login berhasil → arahkan ke halaman admin
-      navigate("/account");
+      // 3. Login berhasil → arahkan ke halaman admin dashboard
+      navigate("/admin/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       setErr("Terjadi kesalahan saat login");

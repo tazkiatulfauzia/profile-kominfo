@@ -14,14 +14,23 @@ export default function Sidebar({ open = false, onClose = () => {}, menus = [] }
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const defaultMenuItems = [
-    { name: "Beranda", path: "/", icon: <Home size={20} /> },
-    { name: "Profil", path: "/profil", icon: <User size={20} /> },
-    { name: "Aplikasi", path: "/aplikasi", icon: <Box size={20} /> },
-    { name: "Berita", path: "/berita", icon: <Newspaper size={20} /> },
-    { name: "Aduan", path: "/aduan", icon: <MessageCircle size={20} /> },
-    { name: "Kontak", path: "/kontak", icon: <Phone size={20} /> },
-  ];
+  const defaultMenuItems = user && user.role === "Admin"
+    ? [
+        { name: "Beranda", path: "/admin/dashboard", icon: <Home size={20} /> },
+        { name: "Akun", path: "/account", icon: <User size={20} /> },
+        { name: "Aplikasi", path: "/aplikasi", icon: <Box size={20} /> },
+        { name: "Berita", path: "/berita", icon: <Newspaper size={20} /> },
+        { name: "Aduan", path: "/aduan", icon: <MessageCircle size={20} /> },
+        { name: "Kontak", path: "/kontak", icon: <Phone size={20} /> },
+      ]
+    : [
+        { name: "Beranda", path: "/", icon: <Home size={20} /> },
+        { name: "Akun", path: "/account", icon: <User size={20} /> },
+        { name: "Aplikasi", path: "/aplikasi", icon: <Box size={20} /> },
+        { name: "Berita", path: "/berita", icon: <Newspaper size={20} /> },
+        { name: "Aduan", path: "/aduan", icon: <MessageCircle size={20} /> },
+        { name: "Kontak", path: "/kontak", icon: <Phone size={20} /> },
+      ];
 
   const baseMenuItems = menus.length
     ? menus.map((m) => ({ ...m, icon: null }))

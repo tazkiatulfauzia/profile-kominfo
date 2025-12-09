@@ -9,13 +9,21 @@ export default function Header() {
   const { user } = useAuth();
   const location = useLocation();
 
-  const menus = [
-    { name: "Beranda", path: "/" },
-    { name: "Aduan", path: "/aduan" },
-    { name: "Aplikasi", path: "/aplikasi" },
-    { name: "Berita", path: "/berita" },
-    { name: "Kontak", path: "/kontak" },
-  ];
+  const menus = user && user.role === "Admin" 
+    ? [
+        { name: "Beranda", path: "/admin/dashboard" },
+        { name: "Aduan", path: "/aduan" },
+        { name: "Aplikasi", path: "/aplikasi" },
+        { name: "Berita", path: "/berita" },
+        { name: "Kontak", path: "/kontak" },
+      ]
+    : [
+        { name: "Beranda", path: "/" },
+        { name: "Aduan", path: "/aduan" },
+        { name: "Aplikasi", path: "/aplikasi" },
+        { name: "Berita", path: "/berita" },
+        { name: "Kontak", path: "/kontak" },
+      ];
 
   return (
     <>

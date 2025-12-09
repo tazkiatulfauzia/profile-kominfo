@@ -58,7 +58,7 @@ export default function Beranda() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-white pb-6">
 
       {/* HERO SECTION (PARALLAX) */}
       <section
@@ -84,18 +84,16 @@ export default function Beranda() {
       </section>
 
       {/* BERITA */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
+      <section className="max-w-7xl mx-auto px-6 pt-16">
         <h2 className="text-2xl md:text-3xl font-bold text-[#003366] mb-10 text-center">
           Berita Terbaru
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
           {(beritaBeranda || []).map((b) => (
-            <a
-              href={b.link}
+            <Link
+              to="/berita"
               key={b.id}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group rounded-xl overflow-hidden shadow hover:shadow-lg bg-white transition transform hover:-translate-y-2"
+              className="group rounded-xl overflow-hidden shadow hover:shadow-lg bg-white transition transform hover:-translate-y-2 cursor-pointer"
             >
               <img
                 src={b.gambar || b.img}
@@ -109,14 +107,25 @@ export default function Beranda() {
                 <p className="text-sm text-gray-600 line-clamp-3 mb-3">
                   {b.deskripsi || b.desc}
                 </p>
+                <span className="text-sm text-[#0055aa] hover:text-[#003366] font-semibold">
+                  Baca Selengkapnya →
+                </span>
               </div>
-            </a>
+            </Link>
           ))}
+        </div>
+        <div className="text-center mt-8">
+          <Link
+            to="/berita"
+            className="inline-block bg-[#FFB800] text-black px-6 py-3 rounded-lg font-medium hover:bg-[#e6a700] transition"
+          >
+            Lihat Semua Berita →
+          </Link>
         </div>
       </section>
 
       {/* APLIKASI */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
+      <section className="max-w-7xl mx-auto px-6 pt-16">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-[#003366]">
           Aplikasi Kota Bukittinggi
         </h2>
@@ -130,25 +139,23 @@ export default function Beranda() {
         >
           {aplikasi.length > 0 ? (
             aplikasi.map((app) => (
-              <a
+              <Link
                 key={app.id}
-                href={app.link}
-                target={app.link.startsWith("http") ? "_blank" : "_self"}
-                rel="noopener noreferrer"
-                className="p-6 bg-white shadow rounded-xl hover:shadow-lg transition flex flex-col items-center text-center w-full max-w-sm"
+                to="/aplikasi"
+                className="p-6 bg-white shadow rounded-xl hover:shadow-lg transition flex flex-col items-center text-center w-full max-w-sm cursor-pointer group"
               >
                 {app.logo_url && (
                   <img
                     src={app.logo_url}
                     alt={app.nama}
-                    className="w-16 h-16 object-contain mb-4"
+                    className="w-16 h-16 object-contain mb-4 group-hover:scale-110 transition-transform"
                   />
                 )}
                 <h3 className="font-semibold text-lg text-[#003366] mb-2">
                   {app.nama}
                 </h3>
                 <p className="text-sm text-gray-600">{app.deskripsi}</p>
-              </a>
+              </Link>
             ))
           ) : (
             <p className="text-center text-gray-500 col-span-full">
@@ -177,7 +184,7 @@ export default function Beranda() {
       </section>
 
       {/* LITERASI DIGITAL */}
-      <section className="mx-auto max-w-7xl px-4 py-16 bg-white">
+      <section className="mx-auto max-w-7xl px-4 pt-16 bg-white">
         <div className="grid lg:grid-cols-3 gap-8">
           <section className="lg:col-span-2">
             <h2 className="text-3xl font-bold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent border-l-4 border-[#003366] pl-4 mb-4">
