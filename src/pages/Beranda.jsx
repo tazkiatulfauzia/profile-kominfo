@@ -215,8 +215,8 @@ export default function Beranda() {
                   className="block rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition transform p-6 bg-gradient-to-br from-white to-blue-50 border border-blue-100"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-gradient-to-br from-[#003366] to-[#0055aa] text-white">
-                      {a.icon}
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-[#003366] to-[#0055aa] text-white flex items-center justify-center">
+                      {React.cloneElement(a.icon, { className: "w-6 h-6 text-white" })}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-[#003366] text-lg leading-snug mb-2">

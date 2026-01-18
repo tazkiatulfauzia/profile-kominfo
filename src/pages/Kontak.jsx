@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { IconInstagram, IconFacebook, IconTwitterX } from "../components/icons/Icons";
-import { MapPin, Phone, Mail, Send, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
+import { MapPin, Phone, Mail, Send, CheckCircle, AlertCircle, Trash2, MessageSquare } from "lucide-react";
 import { tambahKontak, getKontak, deleteKontak } from "../lib/kontak";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,23 +15,47 @@ export default function Kontak() {
     email: "",
     pesan: "",
   });
+  const CACHE_KEY_KONTAK = "adminKontakCache";
+  const CACHE_TTL = 2 * 60 * 1000;
 
   // Load kontak untuk admin
   useEffect(() => {
     if (isAdmin) {
-      loadKontak();
+      let usedCache = false;
+      try {
+        const cached = sessionStorage.getItem(CACHE_KEY_KONTAK);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Date.now() - parsed.timestamp < CACHE_TTL) {
+            setKontakList(parsed.kontakList || []);
+            setLoadingKontak(false);
+            usedCache = true;
+          }
+        }
+      } catch (e) {
+        console.warn("Cache kontak error:", e);
+      }
+      loadKontak({ silent: usedCache });
     }
   }, [isAdmin]);
 
-  async function loadKontak() {
+  async function loadKontak({ silent = false } = {}) {
     try {
-      setLoadingKontak(true);
+      if (!silent) setLoadingKontak(true);
       const data = await getKontak();
       setKontakList(data || []);
+      try {
+        sessionStorage.setItem(
+          CACHE_KEY_KONTAK,
+          JSON.stringify({ timestamp: Date.now(), kontakList: data || [] })
+        );
+      } catch (e) {
+        console.warn("Cache kontak write error:", e);
+      }
     } catch (error) {
       console.error("Gagal memuat kontak:", error);
     } finally {
-      setLoadingKontak(false);
+      if (!silent) setLoadingKontak(false);
     }
   }
 
@@ -71,24 +94,76 @@ export default function Kontak() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 text-[#002244] min-h-screen pb-6">
-      <div className="mx-auto max-w-7xl px-4 pt-14">
-        {/* Heading */}
-        <div className="text-center mb-6">
-          <h2 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-[#003366] to-[#0055aa] bg-clip-text text-transparent relative inline-block">
-            Kontak Kami
-            <span className="block w-24 h-1 bg-gradient-to-r from-[#003366] to-[#0055aa] mx-auto mt-3 rounded"></span>
-          </h2>
-          <p className="mt-4 text-[#002244]/80 text-lg max-w-2xl mx-auto">
-            Kami siap membantu Anda. Silakan hubungi melalui formulir, telepon, email, atau kunjungi kantor kami.
-          </p>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section - Only for non-admin */}
+      {!isAdmin && (
+      <div className="relative w-full py-16 md:py-20 overflow-hidden">
+        {/* Animated Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#003366] via-[#004488] to-[#0055aa]"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#003366]/90 via-transparent to-[#0055aa]/90"></div>
+        {/* Animated Orbs */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex-1 text-white">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg">
+                Hubungi Kami
+              </h1>
+              <p className="text-lg md:text-xl mb-4 text-blue-100 drop-shadow-md">
+                Dinas Komunikasi & Informatika
+              </p>
+              <p className="text-base md:text-lg text-blue-50 mb-6 max-w-2xl drop-shadow-sm">
+                Kami siap membantu Anda. Silakan hubungi melalui formulir, telepon, email, atau kunjungi kantor kami.
+              </p>
+            </div>
+            <div className="flex-1 flex justify-center items-center relative">
+              <div className="relative w-full max-w-md">
+                {/* Decorative Elements */}
+                <div className="absolute -top-4 -left-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+                <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+                
+                <div className="relative rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 border border-white/30 backdrop-blur-sm bg-white/5">
+                  <img 
+                    src="https://admin.bukittinggikota.go.id/storage/berita/T18ZDGrJTrvSmRn6sIxb4j5jQMNUsB-metaMTAwMDQwNjc0OS5qcGc=-.jpg"
+                    alt="Hubungi Kami"
+                    className="w-full h-56 md:h-64 object-cover"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/400x300?text=Hubungi+Kami";
+                    }}
+                  />
+                  {/* Overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#003366]/20 to-transparent"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      )}
+
+      <div className="mx-auto max-w-7xl px-4 py-12">
+        {isAdmin && (
+          <h1 className="text-3xl font-bold text-[#003366] text-center mb-10">
+            Kontak Masuk
+          </h1>
+        )}
+
+        {/* Decorative Divider */}
+        <div className="flex items-center justify-center mb-12">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent"></div>
+          <div className="mx-4 w-2 h-2 rounded-full bg-[#003366]"></div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent"></div>
         </div>
 
         {/* Konten - Jika Admin, tampilkan tabel. Jika User, tampilkan form */}
         {isAdmin ? (
           <div className="mt-12">
             {/* Tabel Kontak untuk Admin */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-200">
+            <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-200 relative overflow-hidden">
+              {/* Decorative Corner */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-blue-50 rounded-bl-full -mr-20 -mt-20"></div>
               {message.text && (
                 <div className={`mb-4 p-3 rounded-lg ${
                   message.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
@@ -118,7 +193,7 @@ export default function Kontak() {
                           <td className="px-4 py-3 text-gray-700">{index + 1}</td>
                           <td className="px-4 py-3 font-medium text-[#003366]">{item.nama}</td>
                           <td className="px-4 py-3 text-gray-700">{item.email}</td>
-                          <td className="px-4 py-3 text-gray-700 max-w-md truncate">{item.pesan}</td>
+                          <td className="px-4 py-3 text-gray-700 max-w-md whitespace-normal break-words">{item.pesan}</td>
                           <td className="px-4 py-3 text-gray-600 text-sm">
                             {item.created_at
                               ? new Date(item.created_at).toLocaleDateString("id-ID", {
@@ -152,7 +227,10 @@ export default function Kontak() {
         ) : (
           <div className="mt-12 grid md:grid-cols-2 gap-10">
             {/* Form & Info untuk User */}
-            <div className="bg-gradient-to-tr from-white to-blue-100/40 rounded-2xl shadow-xl p-8 border border-blue-200">
+            <div className="relative bg-white rounded-2xl shadow-xl p-8 border border-blue-200 overflow-hidden">
+              {/* Decorative Background Pattern */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-bl-full -mr-32 -mt-32 opacity-50"></div>
+              <div className="relative z-10">
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Pesan sukses/error */}
@@ -209,44 +287,27 @@ export default function Kontak() {
               </button>
             </form>
 
-            {/* Info Kontak */}
-            <div className="mt-8 space-y-4 text-sm">
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-[#003366]" />
-                <span>Jl. Kusuma Bhakti, Kubu Gulai Bancah, Kec. Mandiangin Koto Selayan, Kota Bukittinggi, Sumatera Barat 26113</span>
+              {/* Info Kontak */}
+              <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 to-white rounded-xl border border-blue-100 space-y-4 text-sm">
+                <h3 className="font-semibold text-[#003366] mb-4 text-base flex items-center gap-2">
+                  <div className="w-1 h-5 bg-[#003366] rounded-full"></div>
+                  Informasi Kontak
+                </h3>
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-[#003366] mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Jl. Kusuma Bhakti, Kubu Gulai Bancah, Kec. Mandiangin Koto Selayan, Kota Bukittinggi, Sumatera Barat 26113</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone className="h-5 w-5 text-[#003366] flex-shrink-0" />
+                  <span className="text-gray-700">(0752)33369</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Mail className="h-5 w-5 text-[#003366] flex-shrink-0" />
+                  <span className="text-gray-700">diskominfo@bukittinggikota.go.id</span>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-[#003366]" />
-                <span>0853-5566-4484</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-[#003366]" />
-                <span>diskominfo@bukittinggikota.go.id</span>
               </div>
             </div>
-
-            {/* Ikon Sosial Media */}
-            <div className="mt-6 flex gap-4">
-              <a
-                className="rounded-full bg-[#003366]/10 p-3 hover:bg-[#FFB800] transition"
-                href="#"
-              >
-                <IconInstagram className="h-6 w-6 text-[#003366]" />
-              </a>
-              <a
-                className="rounded-full bg-[#003366]/10 p-3 hover:bg-[#FFB800] transition"
-                href="#"
-              >
-                <IconFacebook className="h-6 w-6 text-[#003366]" />
-              </a>
-              <a
-                className="rounded-full bg-[#003366]/10 p-3 hover:bg-[#FFB800] transition"
-                href="#"
-              >
-                <IconTwitterX className="h-6 w-6 text-[#003366]" />
-              </a>
-            </div>
-          </div>
 
             {/* Maps */}
             <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white">

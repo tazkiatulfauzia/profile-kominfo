@@ -26,7 +26,6 @@ export async function tambahAplikasi(nama, deskripsi, link, logo_url = null, ema
       deskripsi,
       link,
       logo_url,
-      email,
     });
     return response.data?.data || response.data;
   } catch (error) {

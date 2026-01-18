@@ -89,6 +89,9 @@ function StatCard({ title, value, icon, accent }) {
   );
 }
 
+const CACHE_KEY = "adminDashboardCache";
+const CACHE_TTL = 2 * 60 * 1000;
+
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -114,12 +117,8 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Check if user is admin - handle both localStorage and Supabase auth
     const checkAdmin = () => {
-      if (user && user.role === "Admin") {
-        return true;
-      }
-      // Fallback: check localStorage
+      if (user && user.role === "Admin") return true;
       try {
         const adminData = localStorage.getItem("adminData");
         if (adminData) {
@@ -136,13 +135,31 @@ export default function AdminDashboard() {
       navigate("/");
       return;
     }
-    loadStats();
+
+    let usedCache = false;
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < CACHE_TTL) {
+          setStats(parsed.stats);
+          setChartData(parsed.chartData);
+          setChartLabels(parsed.chartLabels);
+          setLoading(false);
+          usedCache = true;
+        }
+      }
+    } catch (e) {
+      console.warn("Cache read error:", e);
+    }
+
+    loadStats({ silent: usedCache });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, navigate]);
 
-  async function loadStats() {
+  async function loadStats({ silent = false } = {}) {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError("");
 
       const [beritaData, aduanData, kontakData, aplikasiData] = await Promise.all([
@@ -164,10 +181,8 @@ export default function AdminDashboard() {
         aplikasi: aplikasiArray.length,
       });
 
-      // Prepare chart data - different periods for different charts
       const now = new Date();
-      
-      // Berita: per hari (7 hari terakhir)
+
       const days = [];
       for (let i = 6; i >= 0; i--) {
         const dayStart = new Date(now);
@@ -182,43 +197,38 @@ export default function AdminDashboard() {
         });
       }
 
-      // Aduan & Kontak: per minggu dalam bulan saat ini (4-5 minggu)
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
       const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
       const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-      
-      // Hitung minggu dalam bulan (dari hari pertama bulan sampai hari terakhir)
+
       const weeks = [];
       let weekStart = new Date(firstDayOfMonth);
       weekStart.setHours(0, 0, 0, 0);
       let weekNumber = 1;
-      
+
       while (weekStart <= lastDayOfMonth && weekNumber <= 5) {
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
         weekEnd.setHours(23, 59, 59, 999);
-        
-        // Jika akhir minggu melebihi akhir bulan, set ke akhir bulan
+
         if (weekEnd > lastDayOfMonth) {
           weekEnd.setTime(lastDayOfMonth.getTime());
           weekEnd.setHours(23, 59, 59, 999);
         }
-        
+
         const monthName = firstDayOfMonth.toLocaleDateString("id-ID", { month: "long" });
         weeks.push({
           start: new Date(weekStart),
           end: new Date(weekEnd),
           label: `Minggu ${weekNumber} ${monthName}`
         });
-        
-        // Pindah ke minggu berikutnya (7 hari setelah weekStart)
+
         weekStart = new Date(weekStart);
         weekStart.setDate(weekStart.getDate() + 7);
         weekNumber++;
       }
 
-      // Aplikasi: per bulan (6 bulan terakhir)
       const months = [];
       for (let i = 5; i >= 0; i--) {
         const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -230,54 +240,73 @@ export default function AdminDashboard() {
         });
       }
 
-      const groupByDay = (data, dateField = "created_at") => {
-        return days.map((day) => {
-          return data.filter((item) => {
+      const groupByDay = (data, dateField = "created_at") =>
+        days.map((day) =>
+          data.filter((item) => {
             if (!item[dateField]) return false;
             const itemDate = new Date(item[dateField]);
             return itemDate >= day.start && itemDate < day.end;
-          }).length;
-        });
-      };
+          }).length
+        );
 
-      const groupByWeek = (data, dateField = "created_at") => {
-        return weeks.map((week) => {
-          return data.filter((item) => {
+      const groupByWeek = (data, dateField = "created_at") =>
+        weeks.map((week) =>
+          data.filter((item) => {
             if (!item[dateField]) return false;
             const itemDate = new Date(item[dateField]);
             return itemDate >= week.start && itemDate < week.end;
-          }).length;
-        });
-      };
+          }).length
+        );
 
-      const groupByMonth = (data, dateField = "created_at") => {
-        return months.map((month) => {
-          return data.filter((item) => {
+      const groupByMonth = (data, dateField = "created_at") =>
+        months.map((month) =>
+          data.filter((item) => {
             if (!item[dateField]) return false;
             const itemDate = new Date(item[dateField]);
             return itemDate >= month.start && itemDate < month.end;
-          }).length;
-        });
-      };
+          }).length
+        );
 
-      setChartData({
+      const newChartData = {
         berita: groupByDay(beritaArray),
         aduan: groupByWeek(aduanArray),
         kontak: groupByWeek(kontakArray),
         aplikasi: groupByMonth(aplikasiArray),
-      });
-      
-      setChartLabels({
-        berita: days.map(d => d.label),
-        aduan: weeks.map(w => w.label),
-        kontak: weeks.map(w => w.label),
-        aplikasi: months.map(m => m.label),
-      });
+      };
+
+      const newChartLabels = {
+        berita: days.map((d) => d.label),
+        aduan: weeks.map((w) => w.label),
+        kontak: weeks.map((w) => w.label),
+        aplikasi: months.map((m) => m.label),
+      };
+
+      setChartData(newChartData);
+      setChartLabels(newChartLabels);
+
+      try {
+        sessionStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            timestamp: Date.now(),
+            stats: {
+              berita: beritaArray.length,
+              aduan: aduanArray.length,
+              kontak: kontakArray.length,
+              aplikasi: aplikasiArray.length,
+            },
+            chartData: newChartData,
+            chartLabels: newChartLabels,
+          })
+        );
+      } catch (e) {
+        console.warn("Cache write error:", e);
+      }
     } catch (err) {
       console.error("Gagal memuat statistik:", err);
       setError("Gagal memuat statistik. Pastikan backend berjalan dan CORS diizinkan.");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }
 

@@ -29,6 +29,10 @@ export function AuthProvider({ children }) {
   // Login admin dengan email dan password dari Supabase
   const login = async (email, password) => {
     try {
+      // Pastikan token lama dibersihkan sebelum login ulang
+      localStorage.removeItem("api_token");
+      localStorage.removeItem("adminData");
+
       const { loginAdmin } = await import("../lib/admin");
       const adminData = await loginAdmin(email, password);
       
@@ -58,7 +62,16 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("adminData");
+    // Bersihkan seluruh sesi dan token
+    try {
+      localStorage.removeItem("api_token");
+      localStorage.removeItem("adminData");
+    } catch (e) {
+      console.error("Error clearing auth storage:", e);
+    }
+    import("../lib/supabaseClient")
+      .then(({ supabase }) => supabase.auth.signOut().catch(() => {}))
+      .catch(() => {});
     setUser(null);
   };
 
